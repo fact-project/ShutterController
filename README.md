@@ -1,12 +1,12 @@
 ### Lid Arduino 
 
-
-    Note:  device file `/dev/ttyACM0` is not unique, access the arduino better by e.g. this:
+Note:  device file `/dev/ttyACM0` is not unique, access the arduino better by e.g. this:
     
-`   `/dev/serial/by-id/usb-Arduino__www.arduino.cc__Arduino_USB-Serial_6493633313735151B0D1-if00`
+    /dev/serial/by-id/usb-Arduino__www.arduino.cc__Arduino_USB-Serial_6493633313735151B0D1-if00
 
-    or by the symlink Max Noethe has made:
-    `dev/lid-arduino`
+or by the symlink Max Noethe has made:
+
+    /dev/lid-arduino
 
 
 # build and upload with
