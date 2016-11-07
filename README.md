@@ -9,12 +9,15 @@ or by the symlink Max Noethe has made:
     /dev/lid-arduino
 
 
+
 # build and upload with
 
+    cd Software/ShutterController/
     platformio run -t upload
 
 # connect to serial monitor with
 
+    cd Software/ShutterController/
     platformio device monitor -p /dev/lid-arduino -b 115200
 
 
