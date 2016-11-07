@@ -87,8 +87,8 @@ extern int  __bss_end;
 extern void *__brkval;
 
 // Http header token delimiters
-char *pSpDelimiters = " \r\n";
-char *pStxDelimiter = "\002";    // STX - ASCII start of text character
+const char *pSpDelimiters = " \r\n";
+const char *pStxDelimiter = "\002";    // STX - ASCII start of text character
 
 /**********************************************************************************************************************
 *                                   Strings stored in flash of the HTML we will be transmitting
