@@ -1,13 +1,13 @@
 /*
- * Web Server - for the FACT lid slow control 
+ * Web Server - for the FACT lid slow control
  * Need an Ethernet Shield over Arduino.
  *
- * based on the work of 
+ * based on the work of
  * Martyn Woerner
  * Alessandro Calzavara, alessandro(dot)calzavara(at)gmail(dot)com
  * and Alberto Capponi, bebbo(at)fast-labs net
  * for Arduino community! :-)
- * 
+ *
  *
  */
 
@@ -33,7 +33,7 @@ IPAddress _ip(10,0,100,36);
 // Each value is the real current value in the motors;
 // Define Current Limits in [A] - Offset is 0.5A for no load on the motors
 // pushing coefficient ~100 Kg/A
-const double _ZeroCurrent         PROGMEM = 0.25; // [A] 
+const double _ZeroCurrent         PROGMEM = 0.25; // [A]
 const double _CurrentPushingLimit PROGMEM = 0.75; // 0.7-0.5 = 0.2 -> 20  +/- 5 kg
 const double _OverCurrent         PROGMEM = 1.50; // 1.5-0.5 = 1   -> 100 +/- 5 kg
 
@@ -59,30 +59,30 @@ const char* _StatusLabel[]  = {"Unknown",
                                       "Closed",
                                       "Open",
                                       "Steady",
-                                      "Moving", 
-                                      "Closing", 
+                                      "Moving",
+                                      "Closing",
                                       "Opening",
                                       "Jammed",
                                       "Motor Fault",
                                       "Power Problem",
-                                      "Overcurrent"}; 
+                                      "Overcurrent"};
 // Define Arduino pins
-const int _pinPWM[2]  = {5,   6}; 
+const int _pinPWM[2]  = {5,   6};
 const int _pinDA[2]   = {2,   7};
 const int _pinDB[2]   = {3,   8};
 //unsigned char _ENDIAG[2]   = {A4, A5};
 
 
 // Define conversion coefficients
-double _ADC2V  = 5. / 1024. ; // ADC channel to Volt 
-double _V2A    = 0.140;       // 140 mV/A conversion factor for the 
+double _ADC2V  = 5. / 1024. ; // ADC channel to Volt
+double _V2A    = 0.140;       // 140 mV/A conversion factor for the
 
 
 // Define sensor value and lid status variables
 double  _sensorValue[2]    = {0,0};
 double  _currentValue[2]   = {0,0};
-uint8_t _LidStatus[2]      = {0,0};  
- 
+uint8_t _LidStatus[2]      = {0,0};
+
 extern int  __bss_end;
 extern void *__brkval;
 
@@ -94,7 +94,7 @@ const char *pStxDelimiter = "\002";    // STX - ASCII start of text character
 *                                   Strings stored in flash of the HTML we will be transmitting
 ***********************************************************************************************************************/
 
-// HTTP Request message 
+// HTTP Request message
 const char content_404[] PROGMEM = "HTTP/1.1 404 Not Found\nServer: arduino\nContent-Type: text/html\n\n<html>"
                                          "<head><title>Arduino Web Server - Error 404</title></head>"
                                          "<body><h1>Error 404: Sorry, that page cannot be found!</h1></body>";
@@ -155,8 +155,8 @@ const PROGMEM char content_page5[] = "<hr /><form action=\"/__output__\" method=
     "<button name=\"Button5\" value=\"valueButton5\" type=\"submit\">Open Lid</button><p>"
     "<button name=\"Button6\" value=\"valueButton6\" type=\"submit\">Close Lid</button><p>"
     "Motor Current 1 = \"\002\" A <p> Motor Current 2 = \"\002\" A <p> Hall Sensor 1 = \"\002\" ADC ounts <p> Hall Sensor 2 = \"\002\" ADC counts<p>"
-    "Lid 1 Status : \"\002\"<p>" 
-    "Lid 2 Status : \"\002\"<p><p>" 
+    "Lid 1 Status : \"\002\"<p>"
+    "Lid 2 Status : \"\002\"<p><p>"
     "received a POST request</p></form></p>";
 #else
 const PROGMEM char content_page5[] = "<hr/><form action=\"/__output__\" method=\"POST\">"
@@ -255,13 +255,33 @@ const char * const http_uris[] PROGMEM = { http_uri1, http_uri5 }; // URIs
 ***********************************************************************************************************************/
 EthernetServer server(80);
 
+MethodType readHttpRequest(EthernetClient & client, int & nUriIndex, BUFFER & requestContent);
+void sendProgMemAsString(EthernetClient & client, const char *realword);
+void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent);
+void sendImage(EthernetClient & client, int nUriIndex, BUFFER & requestContent);
+MethodType readRequestLine(EthernetClient & client, BUFFER & readBuffer, int & nUriIndex, BUFFER & requestContent);
+void readRequestHeaders(EthernetClient & client, BUFFER & readBuffer, int & nContentLength, bool & bIsUrlEncoded);
+void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & content);
+void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
+int GetUriIndex(char * pUri);
+void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
+double ReadSensor(int motor);
+void Motor(int motor, int pwm);
+double ReadSensorM(int motor, int samples);
+double ReadCurrentM(int motor,  int samples);
+void MoveTo(int motor, double target_position, int mySpeed);
+void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
+void sendProgMemAsBinary(EthernetClient & client, const char* realword, int realLen);
+unsigned char getFault(int motor);
+int availableMemory();
+
 void setup()
 {
     Serial.begin(115200); // DEBUG
-  
+
 #ifdef ENABLE_ETHERNET
 #ifdef USE_DHCP_FOR_IP_ADDRESS
-    Serial.println("Attempting to obtain a DHCP lease...");  
+    Serial.println("Attempting to obtain a DHCP lease...");
 
     Ethernet.begin(_mac);  // Use DHCP to get an IP address
 #else
@@ -275,15 +295,15 @@ void setup()
   server.begin();
 #endif
   //_Motor.init();
-  
+
   //For Arduino Motor Shield set pin 4,5,6,7 to output mode
-  pinMode(2, OUTPUT); 
-  pinMode(4, OUTPUT); 
-  pinMode(5, OUTPUT); 
-  pinMode(6, OUTPUT); 
-  pinMode(7, OUTPUT); 
-  pinMode(8, OUTPUT); 
-  
+  pinMode(2, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+
   pinMode(A0, INPUT);  //
   pinMode(A1, INPUT);  //
   pinMode(A2, INPUT);  //
@@ -297,12 +317,12 @@ void setup()
   //Now set the appropriate prescaler bits:
   prescalerVal = 3; // set prescalerVal equal to binary number "00000001"
   TCCR0B |= prescalerVal; // OR the value in TCCR0B with binary number "00000001"
-  
+
   //  TCCR0A = _BV(COM0A0) | _BV(COM0B1) | _BV(WGM01) | _BV(WGM00);
   //  TCCR0B = _BV(WGM02) | _BV(CS02);
   //  OCR0A = 180;
   //  OCR0B =  50;
-  
+
   //pinMode(ledPin, OUTPUT);
   //setLed(true);
 }
@@ -317,7 +337,7 @@ void loop()
   EthernetClient client = server.available();
 #endif
 
- 
+
 #ifdef ENABLE_ETHERNET
   if (client)
   {
@@ -374,25 +394,25 @@ void loop()
 * and shows the following structure:
 *  Full-Request and Full-Response use the generic message format of RFC 822 [7] for transferring entities. Both messages may include optional header fields
 *  (also known as "headers") and an entity body. The entity body is separated from the headers by a null line (i.e., a line with nothing preceding the CRLF).
-*      Full-Request   = Request-Line       
-*                       *( General-Header 
-*                        | Request-Header  
-*                        | Entity-Header ) 
+*      Full-Request   = Request-Line
+*                       *( General-Header
+*                        | Request-Header
+*                        | Entity-Header )
 *                       CRLF
-*                       [ Entity-Body ]    
+*                       [ Entity-Body ]
 *
 * The Request-Line begins with a method token, followed by the Request-URI and the protocol version, and ending with CRLF. The elements are separated by SP characters.
 * No CR or LF are allowed except in the final CRLF sequence.
 *      Request-Line   = Method SP Request-URI SP HTTP-Version CRLF
 * HTTP header fields, which include General-Header, Request-Header, Response-Header, and Entity-Header fields, follow the same generic format.
 * Each header field consists of a name followed immediately by a colon (":"), a single space (SP) character, and the field value.
-* Field names are case-insensitive. Header fields can be extended over multiple lines by preceding each extra line with at least one SP or HT, though this is not recommended.     
+* Field names are case-insensitive. Header fields can be extended over multiple lines by preceding each extra line with at least one SP or HT, though this is not recommended.
 *      HTTP-header    = field-name ":" [ field-value ] CRLF
 ***********************************************************************************************************************/
 // Read HTTP request, setting Uri Index, the requestContent and returning the method type.
 MethodType readHttpRequest(EthernetClient & client, int & nUriIndex, BUFFER & requestContent)
 {
-  
+
 
   BUFFER readBuffer;    // Just a work buffer into which we can read records
   int nContentLength = 0;
@@ -447,7 +467,7 @@ MethodType readRequestLine(EthernetClient & client, BUFFER & readBuffer, int & n
 //    Serial.println(requestContent);
   }
   if (strcmp(pMethod, "GET") == 0){
-    eMethod = MethodGet; 
+    eMethod = MethodGet;
 #ifdef DEBUG
     Serial.println("readRequestLine-> GET");
 #endif
@@ -543,7 +563,7 @@ int GetUriIndex(char * pUri)
   Serial.print("GetUriIndex(");
   Serial.print(pUri);
   Serial.print(")\n");
-#endif 
+#endif
 
   int nUriIndex = -1;
   // select the page from the buffer (GET and POST) [start]
@@ -597,12 +617,12 @@ void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer)
 
 /**********************************************************************************************************************
 *                                                              Send Pages
-       Full-Response  = Status-Line         
-                        *( General-Header   
-                         | Response-Header 
-                         | Entity-Header ) 
+       Full-Response  = Status-Line
+                        *( General-Header
+                         | Response-Header
+                         | Entity-Header )
                         CRLF
-                        [ Entity-Body ]   
+                        [ Entity-Body ]
 
        Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
        General-Header = Date | Pragma
@@ -616,7 +636,7 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
   // Read Sensor values for every page reload
   ReadSensorM(-1,100);
   ReadCurrentM(-1,100);
-  
+
 #ifdef DEBUG
   Serial.print("sendPage(");
   Serial.print(nUriIndex);        Serial.print(", ");
@@ -638,21 +658,21 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
   }
   else if (strncmp(requestContent, "Button4=", 8) == 0){
     //Action4(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _StartPoint, 255); 
+    MoveTo(1, _StartPoint, 255);
   }
   else if (strncmp(requestContent, "Button5=", 8) == 0){
-    MoveTo(1, _StartPoint, 255); 
+    MoveTo(1, _StartPoint, 255);
     delay(100);
-    MoveTo(0, _StartPoint, 255); 
+    MoveTo(0, _StartPoint, 255);
   }
   else if (strncmp(requestContent, "Button6=", 8) == 0){
     MoveTo(0, _EndPoint, 255);
     delay(100);
     MoveTo(1, _EndPoint, 255);
-  }  
+  }
 #ifdef DEBUG
   else if (strncmp(requestContent, "", 1) == 0)
-    Serial.print("-> Refresh\n"); 
+    Serial.print("-> Refresh\n");
   else
     Serial.print("-> not recognized\n");
 #endif
@@ -811,19 +831,19 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
           client.print(_currentValue[nSubstituteIndex/2]);
           //client.print("</b>");
         }
-        else if ( (nSubstituteIndex >= 4) && 
+        else if ( (nSubstituteIndex >= 4) &&
                   (nSubstituteIndex <  8)     ) {
           //client.print("<b>");
           client.print(_sensorValue[nSubstituteIndex/2-2]);
           //client.print("</b>");
         }
-        else if ( (nSubstituteIndex >= 8) && 
+        else if ( (nSubstituteIndex >= 8) &&
                   (nSubstituteIndex <  12)     ) {
           //client.print("<b>");
           client.print(_StatusLabel[_LidStatus[nSubstituteIndex/2-4]]);
           //client.print("</b>");
-        
-        }      
+
+        }
         break;
       case 2:  // page 3
         Serial.println(" -> Case 2");
@@ -886,10 +906,10 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 //{
 //  Serial.print("Action->Action1(");
 //  Serial.print(argument);
-//  Serial.print(")\n"); 
+//  Serial.print(")\n");
 //
-//  // Move motor 0 out 
-//  int m=0;  
+//  // Move motor 0 out
+//  int m=0;
 //  MoveTo(m, 1023, 200);
 //
 //}
@@ -898,10 +918,10 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 //{
 //  Serial.print("Action->Action2(");
 //  Serial.print(argument);
-//  Serial.print(")\n"); 
+//  Serial.print(")\n");
 //
-//  // Move motor 1 out 
-//  int m=0;  
+//  // Move motor 1 out
+//  int m=0;
 //  MoveTo(m, 0, 200);
 //}
 //
@@ -909,10 +929,10 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 //{
 //  Serial.print("Action->Action3(");
 //  Serial.print(argument);
-//  Serial.print(")\n"); 
+//  Serial.print(")\n");
 //
-//  // Move motor 0 in  
-//  int m=1;  
+//  // Move motor 0 in
+//  int m=1;
 //  MoveTo(m, 1023, 200);
 //}
 //
@@ -920,20 +940,20 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 //{
 //  Serial.print("Action->Action4(");
 //  Serial.print(argument);
-//  Serial.print(")\n"); 
+//  Serial.print(")\n");
 //
-//  // Move motor 1 in  
-//  int m=1;  
+//  // Move motor 1 in
+//  int m=1;
 //  MoveTo(m, 0, 200);
 //}
 //
-// position in [%]-> [0-1] Closed-Open 
-// 
+// position in [%]-> [0-1] Closed-Open
+//
 void MoveTo(int motor, double target_position, int mySpeed){
 
   // define tmp value for the speed
   int speedTmp = 0;
-  
+
   // define variable containing the current actuator position
   // the travel to be done to rech the target position and the
   // motor current
@@ -947,27 +967,27 @@ void MoveTo(int motor, double target_position, int mySpeed){
   double err_motor_current;
 
   double travel;
-  
+
   // only one reading to define the position is not sufficient
   // current_position = ReadSensor(motor);
 
   // Calculate average final position
-  double tmp=0; 
-  double tmpM=0; 
+  double tmp=0;
+  double tmpM=0;
   double tmpS=0;
-  int    steps=0;  
+  int    steps=0;
 
   for (int i=0;i<SAMPLES;i++){
-    tmp=ReadSensor(motor); 
+    tmp=ReadSensor(motor);
     tmpM += tmp;
-    tmpS += tmp*tmp;  
+    tmpS += tmp*tmp;
   }
   tmpM /= SAMPLES;
   tmpS  = sqrt(tmpS/SAMPLES - tmpM*tmpM);
-  
+
 
   int tmpS_int = (int) tmpS;
-  
+
   // round the mean to it to the closest integer
   current_position = (int) (tmpM+0.5);
   if (((int)tmpS) < 1){
@@ -976,13 +996,13 @@ void MoveTo(int motor, double target_position, int mySpeed){
   else{
     err_current_position = tmpS;
   }
-  
+
   original_position      = current_position;
   err_original_position  = err_current_position;
 
   // calculate the travel needed to reach the target position
   travel = target_position - current_position;
- 
+
   Serial.print("Moving motor ");
   Serial.print(motor);
   Serial.print(" from pos. ");
@@ -994,21 +1014,21 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
   Serial.print(" - The current position of the actuator is ");
   Serial.print(tmpM,3);
-  Serial.print( " +/- " ); 
+  Serial.print( " +/- " );
   Serial.println(tmpS,3);
 
   Serial.print(" - The corrected position of the actuator is ");
   Serial.print(current_position);
-  Serial.print( " +/- " ); 
+  Serial.print( " +/- " );
   Serial.println(err_current_position);
 
-  
+
   // [IF] the travel is bigger than +2*(absolute position error) try to move out the motor
   if (travel > 2*err_current_position){
     // Try to place here (if you have time) a speed self adjucting algorithm
     // base on the trave which the actuator has still to do
     if( _LidStatus[motor] != _CLOSED){
- 
+
       Serial.println(" - going out (lid closing)");
       speedTmp = mySpeed; // positive speed
       steps++;
@@ -1016,7 +1036,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
       // Accelerate motor from 0 to speedTmp linearly
       for (int j=0;j<speedTmp;j++){
-        Motor(motor, j); 
+        Motor(motor, j);
         delay(1);
       }
     }
@@ -1024,17 +1044,17 @@ void MoveTo(int motor, double target_position, int mySpeed){
       Serial.println(" - already closed");
 
       _LidStatus[motor] = _CLOSED;
-      return;          
+      return;
     }
   }
   // [ELSE IF] travel is between -2*(absolute position error) and +2*(absolute position error)
   //           consider yourself already in position
-  else if (travel <=  2*err_current_position && 
+  else if (travel <=  2*err_current_position &&
            travel >= -2*err_current_position    ){
     Serial.println(" - already in place");
 
     _LidStatus[motor] = _STEADY;
-    return;          
+    return;
     // already in place don't bother moving more.
   }
   // [ELSE} if the travel is smaller than -2*(absolute position error) try to move in the motor
@@ -1046,12 +1066,12 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
     // Accelerate motor from 0 to -speedTmp linearly
     for (int j=0;j>speedTmp;j--){
-      Motor(motor, j);  
+      Motor(motor, j);
       delay(1);
     }
-  }   
+  }
 
-  
+
   // Start the main loop which checks the motors while they are mooving
   tmp=0;
   tmpM=0;
@@ -1059,19 +1079,19 @@ void MoveTo(int motor, double target_position, int mySpeed){
   for (steps=1;abs(travel) != 0 ;steps++){
     //Read Current
     motor_current = ReadCurrentM(motor,10);
- 
-    // If Overcurrent stop   
+
+    // If Overcurrent stop
     if (motor_current > _OverCurrent){
       Motor(motor, 0); // Stop Motor
- 
+
       Serial.print(" - WARNING!!! Overcurrent ");
       Serial.print(motor_current,3);
       Serial.print(" [A] at position ");
       Serial.println(current_position,3);
- 
+
       _LidStatus[motor] = _OVER_CURRENT;
       return;
-    }  
+    }
 
     // If Fault stop
     if (getFault(motor)){
@@ -1081,23 +1101,23 @@ void MoveTo(int motor, double target_position, int mySpeed){
       _LidStatus[motor] = _MOTOR_FAULT;
       break;
     }
-  
+
     // Average Current around the steps
     tmp   =  motor_current;
     tmpM += tmp;
     tmpS += tmp*tmp;
- 
+
     // Read current position
     // it doesn't make sense to read it here more time as the actuars are moving
     current_position = ReadSensorM(motor,10);
 
     // Calculate travel distance
     travel           = target_position - current_position;
- 
+
     // Read current absorbed the motor and append the values for the calculation
     // of the mean value and its error
-   
-  
+
+
     // [IF] the current drops below ~0.07 A might means that the end swirch
     //      stopped the motor check also the position to determine if this is true.
     if (motor_current < _ZeroCurrent){
@@ -1125,12 +1145,12 @@ void MoveTo(int motor, double target_position, int mySpeed){
         Serial.print(motor_current);
         Serial.print("A . Pos = ");
         Serial.println(current_position, 3);
-        
+
         _LidStatus[motor]  = _POWER_PROBLEM;
         break; //Exit from the for loop
       }
     }
- 
+
    if (_LidStatus[motor] == _CLOSING && motor_current > _CurrentPushingLimit && current_position > _EndPointLimit){
       Serial.print(" - step ");
       Serial.print(steps);
@@ -1158,10 +1178,10 @@ void MoveTo(int motor, double target_position, int mySpeed){
       Serial.println(" A");
 
 
-      if( _LidStatus[motor] != _CLOSING && 
+      if( _LidStatus[motor] != _CLOSING &&
           _LidStatus[motor] != _OPENING)
         _LidStatus[motor] = _MOVING;
-      
+
       // Redefine better those limits... they might not be necessary with the new low
       // current limits
       //if (steps %500 && current_position > 1000 && target_position > 1000 ){
@@ -1176,49 +1196,49 @@ void MoveTo(int motor, double target_position, int mySpeed){
       //}
     }
 
- 
+
 
     // minimum delay between a cycle and the other is 1 ms
     delay (10);
   }
 
-  // At this stage the motor should be stopped in any case 
+  // At this stage the motor should be stopped in any case
   Motor(motor, 0);
   Serial.print(" - motor reached the destination - pos. ");
   Serial.println(current_position,3);
 
-  // Calculate current average and sigma 
+  // Calculate current average and sigma
   tmpM /= steps;
   tmpS  = sqrt(tmpS/steps - tmpM*tmpM);
   Serial.print(" - average current over the loop ");
   Serial.print(tmpM,3);
-  Serial.print( " +/- " ); 
+  Serial.print( " +/- " );
   Serial.println(tmpS,3);
 
   // Wait 100 ms then calculate average final position
-  delay(100); 
+  delay(100);
   tmp=0; tmpM=0; tmpS=0;
 
   for (int i=0;i<SAMPLES;i++){
-    tmp=ReadSensor(motor);  
+    tmp=ReadSensor(motor);
     tmpM += tmp;
-    tmpS += tmp*tmp;  
+    tmpS += tmp*tmp;
   }
   tmpM /= SAMPLES;
   tmpS  = sqrt(tmpS/SAMPLES - tmpM*tmpM);
-  
+
   Serial.print(" - final position is ");
   Serial.print(tmpM,3);
-  Serial.print( " +/- " ); 
+  Serial.print( " +/- " );
   Serial.println(tmpS,3);
- 
+
   Serial.print(" - Lid staus is ");
   Serial.println(_StatusLabel[_LidStatus[motor]]);
-  
+
   Serial.print("AvailableMemory()=");
   Serial.println(availableMemory());
 
- 
+
 }
 
 int availableMemory() {
@@ -1227,7 +1247,7 @@ int availableMemory() {
     free_memory = ((int)&free_memory) - ((int) &__bss_end);
   else
     free_memory = ((int)&free_memory) - ((int) &__brkval);
-  
+
   return free_memory;
 }
 
@@ -1238,8 +1258,8 @@ int availableMemory() {
 double ReadSensor(int motor){
 #ifdef DEBUG
   Serial.println("Action->ReadSensors()");
-#endif 
- 
+#endif
+
   switch (motor){
     case -1: // Read all of them
       _sensorValue[0] =  analogRead(A2);//*_ADC2V - _Voffset;// *_Compensation;          // Actuator 1 position
@@ -1258,7 +1278,7 @@ double ReadSensor(int motor){
 double ReadSensorM(int motor, int samples){
 #ifdef DEBUG
   Serial.println("Action->ReadSensorsM()");
-#endif 
+#endif
   switch (motor){
     case -1: // Read all of them
       _sensorValue[0] = 0;
@@ -1283,16 +1303,16 @@ double ReadSensorM(int motor, int samples){
       for (int j=0;j<samples;j++)
         _sensorValue[motor] +=  analogRead(A3);//*_ADC2V - _Voffset;//_Compensation;
       _sensorValue[motor] /= samples;
-      return _sensorValue[motor]; 
+      return _sensorValue[motor];
       //_sensorValue[motor] = 771.9; // Actuator 1 position edit, mknoetig, more hacking: moto 1 actuator is broken now always report 771.9 in order to run it like in january
       return _sensorValue[motor];
   }
-  
+
 }
 
 
 // ReadCurrent(-1); - Read current for all the motors
-// ReadCurrent(0);  - Read motor 0 current 
+// ReadCurrent(0);  - Read motor 0 current
 // ReadCurrent(1);  - Read motor 1 current
 double ReadCurrent(int motor){
   switch (motor){
@@ -1307,7 +1327,7 @@ double ReadCurrent(int motor){
     case 1:
       _currentValue[motor] =  analogRead(A5)*_ADC2V/(_V2A*10.);
       return _currentValue[motor]; // Current of the motor
-  }  
+  }
 }
 
 double ReadCurrentM(int motor,  int samples){
@@ -1325,7 +1345,7 @@ double ReadCurrentM(int motor,  int samples){
     case 0:
       _currentValue[motor] = 0;
       for (int j=0;j<samples;j++)
-        _currentValue[motor] +=  analogRead(A4)*_ADC2V/(_V2A*10.);        
+        _currentValue[motor] +=  analogRead(A4)*_ADC2V/(_V2A*10.);
       _currentValue[motor]/=samples;
       return _currentValue[motor];
     case 1:
@@ -1346,13 +1366,13 @@ unsigned char getFault(int motor)
   return 0; //!digitalRead(_ENDIAG[motor]);
 }
 
-// control motor, -255 < pwm < 255 
+// control motor, -255 < pwm < 255
 //
 void Motor(int motor, int pwm){
-  bool reverse = false; 
+  bool reverse = false;
 
   // Check sign and direction
-  if (pwm < 0){ 
+  if (pwm < 0){
     pwm = -pwm;
     reverse = true;
   }
@@ -1360,23 +1380,23 @@ void Motor(int motor, int pwm){
   // Check max speed
   if      (pwm >  255) pwm =  255;
   else if (pwm < -255) pwm = -255;
-  
+
   // Activate motors
   analogWrite(_pinPWM[motor], pwm); //set pwm control, 0 for stop, and 255 for maximum speed
   if (pwm != 0){
     if(reverse) {
-      digitalWrite(_pinDA[motor], HIGH);   
-      digitalWrite(_pinDB[motor], LOW);    
-    }  
+      digitalWrite(_pinDA[motor], HIGH);
+      digitalWrite(_pinDB[motor], LOW);
+    }
     else {
-      digitalWrite(_pinDA[motor], LOW);  
-      digitalWrite(_pinDB[motor], HIGH);   
+      digitalWrite(_pinDA[motor], LOW);
+      digitalWrite(_pinDB[motor], HIGH);
     }
   }
   else {
-     digitalWrite(_pinDA[motor], LOW);  
-     digitalWrite(_pinDB[motor], LOW);   
+     digitalWrite(_pinDA[motor], LOW);
+     digitalWrite(_pinDB[motor], LOW);
   }
-} 
-         
-  
+}
+
+
