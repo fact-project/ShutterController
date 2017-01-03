@@ -46,7 +46,6 @@ void DualVNH5019MotorShield::init()
   pinMode(_EN2DIAG2,INPUT);
   pinMode(_CS2,INPUT);
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-
   /*
   // Timer 1 configuration
   // prescaler: clockI/O / 1
@@ -88,7 +87,7 @@ void DualVNH5019MotorShield::setM1Speed(int speed)
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
   OCR0B = speed;
   #else
-  analogWrite(_PWM1,speed);
+  analogWrite(_PWM1, speed);
   #endif
   if (speed == 0)
   {
@@ -122,7 +121,7 @@ void DualVNH5019MotorShield::setM2Speed(int speed)
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
   OCR0A = speed;
   #else
-  analogWrite(_PWM2,speed);
+  analogWrite(_PWM2, speed);
   #endif
   if (speed == 0)
   {
