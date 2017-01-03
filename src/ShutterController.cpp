@@ -18,7 +18,6 @@
 #include "ShutterController.h"
 
 //#define USE_DHCP_FOR_IP_ADDRESS
-#define ENABLE_ETHERNET
 #define SAMPLES  100
 
 // Define MAC and IP addresses
@@ -250,7 +249,6 @@ void setup()
 {
     Serial.begin(115200);
 
-#ifdef ENABLE_ETHERNET
 #ifdef USE_DHCP_FOR_IP_ADDRESS
     Serial.println("Attempting to obtain a DHCP lease...");
 
@@ -264,7 +262,6 @@ void setup()
   Serial.println(Ethernet.localIP());
 
   server.begin();
-#endif
   //_Motor.init();
 
   //For Arduino Motor Shield set pin 4,5,6,7 to output mode
@@ -304,12 +301,7 @@ void setup()
 
 void loop()
 {
-#ifdef ENABLE_ETHERNET
   EthernetClient client = server.available();
-#endif
-
-
-#ifdef ENABLE_ETHERNET
   if (client)
   {
       // now client is connected to arduino we need to extract the
@@ -340,12 +332,8 @@ void loop()
 
     client.stop();
   }
-#endif
-
-
 }
 
-#ifdef ENABLE_ETHERNET
 /**********************************************************************************************************************
 *                                              Method for read HTTP Header Request from web client
 *
@@ -811,7 +799,7 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
     }
   }
 }
-#endif
+
 //
 //void Action1(bool argument)
 //{
