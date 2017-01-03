@@ -192,7 +192,6 @@ double ReadCurrentM(int motor,  int samples);
 void MoveTo(int motor, double target_position, int mySpeed);
 void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
 void sendProgMemAsBinary(EthernetClient & client, const char* realword, int realLen);
-unsigned char getFault(int motor);
 int availableMemory();
 
 byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
@@ -863,15 +862,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
       return;
     }
 
-    // If Fault stop
-    if (getFault(motor)){
-      md.setMotorSpeed(motor, 0);
-      Serial.print(" - GetFault - at position ");
-      Serial.println(current_position,3);
-      _LidStatus[motor] = _MOTOR_FAULT;
-      break;
-    }
-
     // Average Current around the steps
     tmp   =  motor_current;
     tmpM += tmp;
@@ -1122,11 +1112,3 @@ double ReadCurrentM(int motor,  int samples){
   }
 
 }
-
-
-// Return error status for motor
-unsigned char getFault(int motor)
-{
-  return 0; //!digitalRead(_ENDIAG[motor]);
-}
-
