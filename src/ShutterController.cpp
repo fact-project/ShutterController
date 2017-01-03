@@ -735,24 +735,6 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
         break;
       case 2:  // page 3
         Serial.println(" -> Case 2");
-//
-//        switch (nSubstituteIndex)
-//        {
-//          case 0:  // LedOn button send value
-//            if (strncmp(requestContent, "Button1=", 8) == 0)
-//              Action1(strncmp(&requestContent[9], "true", 4) == 0);
-//
-//            client.print(Action1 ? "false" : "true");
-//            break;
-//          case 1:  // LedOn button legend
-//            //client.print(isLedOn ? "Off" : "On");
-//            break;
-//          case 2:  // LedOn partial image name
-//            //client.print(isLedOn ? "on" : "off");
-//            break;
-//          default:
-//            break;
-//         }
         break;
     }
   }
@@ -786,54 +768,7 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
   }
 }
 
-//
-//void Action1(bool argument)
-//{
-//  Serial.print("Action->Action1(");
-//  Serial.print(argument);
-//  Serial.print(")\n");
-//
-//  // Move motor 0 out
-//  int m=0;
-//  MoveTo(m, 1023, 200);
-//
-//}
 
-//void Action2(bool argument)
-//{
-//  Serial.print("Action->Action2(");
-//  Serial.print(argument);
-//  Serial.print(")\n");
-//
-//  // Move motor 1 out
-//  int m=0;
-//  MoveTo(m, 0, 200);
-//}
-//
-//void Action3(bool argument)
-//{
-//  Serial.print("Action->Action3(");
-//  Serial.print(argument);
-//  Serial.print(")\n");
-//
-//  // Move motor 0 in
-//  int m=1;
-//  MoveTo(m, 1023, 200);
-//}
-//
-//void Action4(bool argument)
-//{
-//  Serial.print("Action->Action4(");
-//  Serial.print(argument);
-//  Serial.print(")\n");
-//
-//  // Move motor 1 in
-//  int m=1;
-//  MoveTo(m, 0, 200);
-//}
-//
-// position in [%]-> [0-1] Closed-Open
-//
 void MoveTo(int motor, double target_position, int mySpeed){
 
   // define tmp value for the speed
