@@ -86,7 +86,7 @@ void DualVNH5019MotorShield::setM1Speed(int speed)
   if (speed > 255)  // Max PWM dutycycle
     speed = 255;
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0A = speed;
+  OCR0B = speed;
   #else
   analogWrite(_PWM1,speed);
   #endif
@@ -120,7 +120,7 @@ void DualVNH5019MotorShield::setM2Speed(int speed)
   if (speed > 255)  // Max
     speed = 255;
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0B = speed;
+  OCR0A = speed;
   #else
   analogWrite(_PWM2,speed);
   #endif
@@ -161,7 +161,7 @@ void DualVNH5019MotorShield::setM1Brake(int brake)
   digitalWrite(_INA1, LOW);
   digitalWrite(_INB1, LOW);
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0A = brake;
+  OCR0B = brake;
   #else
   analogWrite(_PWM1, brake);
   #endif
@@ -180,7 +180,7 @@ void DualVNH5019MotorShield::setM2Brake(int brake)
   digitalWrite(_INA2, LOW);
   digitalWrite(_INB2, LOW);
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0B = brake;
+  OCR0A = brake;
   #else
   analogWrite(_PWM2, brake);
   #endif
