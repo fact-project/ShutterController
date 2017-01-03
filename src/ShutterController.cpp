@@ -17,17 +17,7 @@
 
 #include "ShutterController.h"
 
-//#define USE_DHCP_FOR_IP_ADDRESS
 #define SAMPLES  100
-
-// Define MAC and IP addresses
-byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
-//byte _mac[] = { 0x80, 0x49, 0x71, 0x0f, 0x80, 0xd0 };
-#if !defined USE_DHCP_FOR_IP_ADDRESS
-// ip represents the fixed IP address to use if DHCP is disabled.
-IPAddress _ip(10,0,100,36);
-#endif
-//
 
 // Each value is the real current value in the motors;
 // Define Current Limits in [A] - Offset is 0.5A for no load on the motors
@@ -245,18 +235,14 @@ void sendProgMemAsBinary(EthernetClient & client, const char* realword, int real
 unsigned char getFault(int motor);
 int availableMemory();
 
+byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
+IPAddress _ip(10,0,100,36);
+
 void setup()
 {
     Serial.begin(115200);
-
-#ifdef USE_DHCP_FOR_IP_ADDRESS
-    Serial.println("Attempting to obtain a DHCP lease...");
-
-    Ethernet.begin(_mac);  // Use DHCP to get an IP address
-#else
     Serial.println("Using hard-coded ip...");
     Ethernet.begin(_mac, _ip);
-#endif
 
   Serial.print("My IP address is ");
   Serial.println(Ethernet.localIP());
