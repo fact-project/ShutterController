@@ -134,6 +134,14 @@ void DualVNH5019MotorShield::setM2Speed(int speed)
   }
 }
 
+void DualVNH5019MotorShield::setMotorSpeed(int motor, int speed){ // choose motor as int: 0 -> M1 and 1 -> M2
+  if(motor == 0){
+    setM1Speed(speed);
+  } else {
+    setM2Speed(speed);
+  }
+}
+
 // Set speed for motor 1 and 2
 void DualVNH5019MotorShield::setSpeeds(int m1Speed, int m2Speed)
 {

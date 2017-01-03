@@ -15,6 +15,7 @@ class DualVNH5019MotorShield
     void init(); // Initialize TIMER 1, set the PWM to 20kHZ.
     void setM1Speed(int speed); // Set speed for M1.
     void setM2Speed(int speed); // Set speed for M2.
+    void setMotorSpeed(int motor, int speed); // choose motor as int: 0 -> M1 and 1 -> M2
     void setSpeeds(int m1Speed, int m2Speed); // Set speed for both M1 and M2.
     void setM1Brake(int brake); // Brake M1.
     void setM2Brake(int brake); // Brake M2.
