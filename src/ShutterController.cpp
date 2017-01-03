@@ -120,18 +120,6 @@ const char * const contents_main[] PROGMEM = { content_main_header, content_main
 // Page 1
 const PROGMEM char http_uri1[] = "/";
 const PROGMEM char content_title1[] = "<h2>Shutter Lid Control - Beta</h2>";
-#ifdef DEBUG
-// To Be Fixed
-const PROGMEM char content_page1[] = "<hr /><form action=\"/__output__\" method=\"POST\">"
-    "<button name=\"Button1\" value=\"valueButton1\" type=\"submit\">Move Motor 1 OUT </button><p>"
-    "<button name=\"Button2\" value=\"valueButton2\" type=\"submit\">Move Motor 1 IN </button><p>"
-    "<button name=\"Button3\" value=\"valueButton3\" type=\"submit\">Move Motor 2 OUT </button><p>"
-    "<button name=\"Button4\" value=\"valueButton4\" type=\"submit\">Move Motor 2 IN </button><p>"
-    "<button name=\"Button5\" value=\"valueButton5\" type=\"submit\">Open Lid</button><p>"
-    "<button name=\"Button6\" value=\"valueButton6\" type=\"submit\">Close Lid</button><p>"
-    "Motor Current 1 = \002 A <p> Motor Current 2 = \002 A <p> Hall Sensor 1 = \002 ADC counts <p> Hall Sensor 2 = \002 ADC counts<p>"
-    "</form></p>";
-#else
 const PROGMEM char content_page1[] = "<hr/><form action=\"/__output__\" method=\"POST\">"
                                     "<button name=\"Button5\" value=\"valueButton5\" type=\"submit\">Open Lid</button><p/>"
                                     "<button name=\"Button6\" value=\"valueButton6\" type=\"submit\">Close Lid</button><p/>"
@@ -139,26 +127,11 @@ const PROGMEM char content_page1[] = "<hr/><form action=\"/__output__\" method=\
                                     "<span id=\"pos1\" value=\"\002\"> Hall Sensor 1 = \002 ADC counts </span><p/><span id=\"pos2\" value=\"\002\"> Hall Sensor 2 = \002 ADC counts</span><p/>"
                                     "</form></p>";
                                     //<br/></body></html>
-#endif
 
 // Page 5
 
 const PROGMEM char http_uri5[] = "/__output__";
 const PROGMEM char content_title5[] = "<h2>Shutter Lid Control - Beta</h2>";
-#ifdef DEBUG
-// To Be Fixed
-const PROGMEM char content_page5[] = "<hr /><form action=\"/__output__\" method=\"POST\">"
-    "<button name=\"Button1\" value=\"valueButton1\" type=\"submit\">Move Motor 1 OUT </button><p>"
-    "<button name=\"Button2\" value=\"valueButton2\" type=\"submit\">Move Motor 1 IN </button><p>"
-    "<button name=\"Button3\" value=\"valueButton3\" type=\"submit\">Move Motor 2 OUT </button><p>"
-    "<button name=\"Button4\" value=\"valueButton4\" type=\"submit\">Move Motor 2 IN </button><p>"
-    "<button name=\"Button5\" value=\"valueButton5\" type=\"submit\">Open Lid</button><p>"
-    "<button name=\"Button6\" value=\"valueButton6\" type=\"submit\">Close Lid</button><p>"
-    "Motor Current 1 = \"\002\" A <p> Motor Current 2 = \"\002\" A <p> Hall Sensor 1 = \"\002\" ADC ounts <p> Hall Sensor 2 = \"\002\" ADC counts<p>"
-    "Lid 1 Status : \"\002\"<p>"
-    "Lid 2 Status : \"\002\"<p><p>"
-    "received a POST request</p></form></p>";
-#else
 const PROGMEM char content_page5[] = "<hr/><form action=\"/__output__\" method=\"POST\">"
                                     "<button name=\"Button5\" value=\"valueButton5\" type=\"submit\">Open Lid</button><p/>"
                                     "<button name=\"Button6\" value=\"valueButton6\" type=\"submit\">Close Lid</button><p/>"
@@ -167,8 +140,6 @@ const PROGMEM char content_page5[] = "<hr/><form action=\"/__output__\" method=\
                                     "<span id=\"lid1\" value=\"\002\"> Lid 1 Status : \002</span><p/>"
                                     "<span id=\"lid2\" value=\"\002\"> Lid 2 Status : \002</span><p/>"
                                     "<p/>received a POST request</form><p/>";
-//                                    <br/></body></html>
-#endif
 
 // declare tables for the pages
 const char * const contents_titles[] PROGMEM = { content_title1,  content_title5 }; // titles
@@ -277,7 +248,7 @@ int availableMemory();
 
 void setup()
 {
-    Serial.begin(115200); // DEBUG
+    Serial.begin(115200);
 
 #ifdef ENABLE_ETHERNET
 #ifdef USE_DHCP_FOR_IP_ADDRESS
@@ -347,15 +318,6 @@ void loop()
     BUFFER requestContent;    // Request content as a null-terminated string.
     MethodType eMethod = readHttpRequest(client, nUriIndex, requestContent);
 
-#ifdef DEBUG
-    Serial.print(" o- Read Request type: ");
-    Serial.print(eMethod);
-    Serial.print(" Uri index: ");
-    Serial.print(nUriIndex);
-    Serial.print(" content: ");
-    Serial.print(requestContent);
-    Serial.print("\n");
-#endif
     if (nUriIndex < 0)
     {
       // URI not found
@@ -364,9 +326,6 @@ void loop()
     else if (nUriIndex < NUM_PAGES)
     {
       // Normal page request, may depend on content of the request
-#ifdef DEBUG
-      Serial.println(" o- Sending page");
-#endif
       sendPage(client, nUriIndex, requestContent);
     }
     else
@@ -468,21 +427,12 @@ MethodType readRequestLine(EthernetClient & client, BUFFER & readBuffer, int & n
   }
   if (strcmp(pMethod, "GET") == 0){
     eMethod = MethodGet;
-#ifdef DEBUG
-    Serial.println("readRequestLine-> GET");
-#endif
 }
   else if (strcmp(pMethod, "POST") == 0){
     eMethod = MethodPost;
-#ifdef DEBUG
-    Serial.println("readRequestLine-> POST");
-#endif
 }
   else if (strcmp(pMethod, "HEAD") == 0){
     eMethod = MethodHead;
- #ifdef DEBUG
-    Serial.println("readRequestLine-> HEAD");
- #endif
   }
   else
     eMethod = MethodUnknown;
@@ -504,7 +454,6 @@ void readRequestHeaders(EthernetClient & client, BUFFER & readBuffer, int & nCon
   do
   {
     getNextHttpLine(client, readBuffer);
-    //    Serial.println(readBuffer); // DEBUG
     // Process a header. We only need to extract the (optionl) content
     // length for the binary content that follows all these headers.
     // General-Header = Date | Pragma
@@ -545,7 +494,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
   for (i = 0; i < nContentLength; ++i)
   {
     c = client.read();
-//    Serial.print(c); // DEBUG
     content[i] = c;
   }
 
@@ -559,12 +507,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
 int GetUriIndex(char * pUri)
 {
 
-#ifdef DEBUG
-  Serial.print("GetUriIndex(");
-  Serial.print(pUri);
-  Serial.print(")\n");
-#endif
-
   int nUriIndex = -1;
   // select the page from the buffer (GET and POST) [start]
   for (int i = 0; i < NUM_URIS; i++)
@@ -572,11 +514,6 @@ int GetUriIndex(char * pUri)
     if (strcmp_P(pUri, (const char * const)pgm_read_word(&(http_uris[i]))) == 0)
     {
       nUriIndex = i;
-
-#ifdef DEBUG
-      Serial.print(" o- URI: ");
-      Serial.println(pUri);
-#endif
 
       break;
     }
@@ -637,13 +574,6 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
   ReadSensorM(-1,100);
   ReadCurrentM(-1,100);
 
-#ifdef DEBUG
-  Serial.print("sendPage(");
-  Serial.print(nUriIndex);        Serial.print(", ");
-  Serial.print(requestContent);
-  Serial.println(")");
-#endif
-
   if (strncmp(requestContent, "Button1=", 8) == 0){
     //Action1(strncmp(&requestContent[9], "true", 4) == 0);
     MoveTo(0, _EndPoint, 255);
@@ -670,12 +600,6 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
     delay(100);
     MoveTo(1, _EndPoint, 255);
   }
-#ifdef DEBUG
-  else if (strncmp(requestContent, "", 1) == 0)
-    Serial.print("-> Refresh\n");
-  else
-    Serial.print("-> not recognized\n");
-#endif
 
   // send HTML header
   // sendProgMemAsString(client,(char*)pgm_read_word(&(contents_main[CONT_HEADER])));
@@ -810,22 +734,12 @@ void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & reques
 // the substitution index within the content.
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent)
 {
-#ifdef DEBUG
-  Serial.print("sendSubstitute(");
-  Serial.print(nUriIndex);        Serial.print(", ");
-  Serial.print(nSubstituteIndex); Serial.print(", ");
-  Serial.print(requestContent);
-  Serial.print(")\n");
-#endif
   if (nUriIndex < NUM_PAGES)
   {
     // Page request
     switch (nUriIndex)
     {
       case 1:  // page 2
-#ifdef DEBUG
-        Serial.println(" -> Case 1");
-#endif
         if (nSubstituteIndex < 4){
           //client.print("<b>");
           client.print(_currentValue[nSubstituteIndex/2]);
@@ -851,9 +765,6 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 //        switch (nSubstituteIndex)
 //        {
 //          case 0:  // LedOn button send value
-//#ifdef DEBUG
-//            Serial.println(requestContent);
-//#endif
 //            if (strncmp(requestContent, "Button1=", 8) == 0)
 //              Action1(strncmp(&requestContent[9], "true", 4) == 0);
 //
@@ -1256,9 +1167,6 @@ int availableMemory() {
 // ReadSensor(0);  - Read sensor 0
 // ReadSensor(1);  - Read sensor 1
 double ReadSensor(int motor){
-#ifdef DEBUG
-  Serial.println("Action->ReadSensors()");
-#endif
 
   switch (motor){
     case -1: // Read all of them
@@ -1276,9 +1184,6 @@ double ReadSensor(int motor){
 }
 
 double ReadSensorM(int motor, int samples){
-#ifdef DEBUG
-  Serial.println("Action->ReadSensorsM()");
-#endif
   switch (motor){
     case -1: // Read all of them
       _sensorValue[0] = 0;
