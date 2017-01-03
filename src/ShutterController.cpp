@@ -187,7 +187,6 @@ void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
 int GetUriIndex(char * pUri);
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
 double ReadSensor(int motor);
-void Motor(int motor, int pwm);
 double ReadSensorM(int motor, int samples);
 double ReadCurrentM(int motor,  int samples);
 void MoveTo(int motor, double target_position, int mySpeed);
@@ -807,7 +806,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
       // Accelerate motor from 0 to speedTmp linearly
       for (int j=0;j<speedTmp;j++){
-        Motor(motor, j);
+        md.setMotorSpeed(motor, j);
         delay(1);
       }
     }
@@ -837,7 +836,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
     // Accelerate motor from 0 to -speedTmp linearly
     for (int j=0;j>speedTmp;j--){
-      Motor(motor, j);
+      md.setMotorSpeed(motor, j);
       delay(1);
     }
   }
@@ -853,7 +852,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
     // If Overcurrent stop
     if (motor_current > _OverCurrent){
-      Motor(motor, 0); // Stop Motor
+      md.setMotorSpeed(motor, 0);
 
       Serial.print(" - WARNING!!! Overcurrent ");
       Serial.print(motor_current,3);
@@ -866,7 +865,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
     // If Fault stop
     if (getFault(motor)){
-      Motor(motor, 0); // Stop Motor
+      md.setMotorSpeed(motor, 0);
       Serial.print(" - GetFault - at position ");
       Serial.println(current_position,3);
       _LidStatus[motor] = _MOTOR_FAULT;
@@ -974,7 +973,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
   }
 
   // At this stage the motor should be stopped in any case
-  Motor(motor, 0);
+  md.setMotorSpeed(motor, 0);
   Serial.print(" - motor reached the destination - pos. ");
   Serial.println(current_position,3);
 
@@ -1130,38 +1129,4 @@ unsigned char getFault(int motor)
 {
   return 0; //!digitalRead(_ENDIAG[motor]);
 }
-
-// control motor, -255 < pwm < 255
-//
-void Motor(int motor, int pwm){
-  bool reverse = false;
-
-  // Check sign and direction
-  if (pwm < 0){
-    pwm = -pwm;
-    reverse = true;
-  }
-
-  // Check max speed
-  if      (pwm >  255) pwm =  255;
-  else if (pwm < -255) pwm = -255;
-
-  // Activate motors
-  analogWrite(_pinPWM[motor], pwm); //set pwm control, 0 for stop, and 255 for maximum speed
-  if (pwm != 0){
-    if(reverse) {
-      digitalWrite(_pinDA[motor], HIGH);
-      digitalWrite(_pinDB[motor], LOW);
-    }
-    else {
-      digitalWrite(_pinDA[motor], LOW);
-      digitalWrite(_pinDB[motor], HIGH);
-    }
-  }
-  else {
-     digitalWrite(_pinDA[motor], LOW);
-     digitalWrite(_pinDB[motor], LOW);
-  }
-}
-
 
