@@ -856,8 +856,6 @@ void MoveTo(int motor, double target_position){
    if (_LidStatus[motor] == _CLOSING && motor_current > _CurrentPushingLimit && current_position > _EndPointLimit){
       Serial.print(" - step ");
       Serial.print(steps);
-      // Serial.print(" - travelled for ");
-      // Serial.print(travel_done);
       Serial.print(" - pushing -> I = ");
       Serial.print(motor_current, 3);
       Serial.println(" A");
@@ -879,25 +877,9 @@ void MoveTo(int motor, double target_position){
       Serial.println(" A");
 
 
-      if( _LidStatus[motor] != _CLOSING &&
-          _LidStatus[motor] != _OPENING)
+      if( _LidStatus[motor] != _CLOSING && _LidStatus[motor] != _OPENING)
         _LidStatus[motor] = _MOVING;
-
-      // Redefine better those limits... they might not be necessary with the new low
-      // current limits
-      //if (steps %500 && current_position > 1000 && target_position > 1000 ){
-      //  Serial.print(" - Reached End of Actuator. Pos = ");
-      //  Serial.println(current_position, 3);
-      //  break;
-      //}
-      //if (steps %500 && current_position < 80 && target_position < 80 ){
-      //  Serial.print(" - Reached Beginning of Actuator. Pos = ");
-      //  Serial.println(current_position, 3);
-      //  break;
-      //}
     }
-
-
 
     // minimum delay between a cycle and the other is 1 ms
     delay (10);
