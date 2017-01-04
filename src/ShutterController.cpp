@@ -438,79 +438,6 @@ void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer)
 }
 
 /**********************************************************************************************************************
-*                                                              Send Pages
-       Full-Response  = Status-Line
-                        *( General-Header
-                         | Response-Header
-                         | Entity-Header )
-                        CRLF
-                        [ Entity-Body ]
-
-       Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-       General-Header = Date | Pragma
-       Response-Header = Location | Server | WWW-Authenticate
-       Entity-Header  = Allow | Content-Encoding | Content-Length | Content-Type
-                      | Expires | Last-Modified | extension-header
-*
-***********************************************************************************************************************/
-void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
-{
-  // Read Sensor values for every page reload
-  _sensorValue[0] = lh.get_mean(0, 100);
-  _sensorValue[1] = lh.get_mean(1, 100);
-  _currentValue[0] = md.get_mean(0, 100) / 1000.;
-  _currentValue[1] = md.get_mean(1, 100) / 1000.;
-
-  if (strncmp(requestContent, "Button1=", 8) == 0){
-    //Action1(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _EndPoint);
-  }
-  else if (strncmp(requestContent, "Button2=", 8) == 0){
-    //Action2(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _StartPoint);
-  }
-  else if (strncmp(requestContent, "Button3=", 8) == 0){
-    //Action3(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _EndPoint);
-  }
-  else if (strncmp(requestContent, "Button4=", 8) == 0){
-    //Action4(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _StartPoint);
-  }
-  else if (strncmp(requestContent, "Button5=", 8) == 0){
-    MoveTo(1, _StartPoint);
-    delay(100);
-    MoveTo(0, _StartPoint);
-  }
-  else if (strncmp(requestContent, "Button6=", 8) == 0){
-    MoveTo(0, _EndPoint);
-    delay(100);
-    MoveTo(1, _EndPoint);
-  }
-
-  // send HTML header
-  // sendProgMemAsString(client,(char*)pgm_read_word(&(contents_main[CONT_HEADER])));
-  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_main[CONT_TOP])));
-
-  // send menu
-  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_main[CONT_MENU])));
-
-  // send title
-  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_titles[nUriIndex])));
-
-  // send the body for the requested page
-  sendUriContentByIndex(client, nUriIndex, requestContent);
-
-  // Append the data sent in the original HTTP request
-  client.print("<br/>");
-  // send POST variables
-  client.print(requestContent);
-
-  // send footer
-  sendProgMemAsString(client,(char*)pgm_read_word(&(contents_main[CONT_FOOTER])));
-}
-
-/**********************************************************************************************************************
 *                                                              Send Images
 ***********************************************************************************************************************/
 void sendImage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
@@ -713,4 +640,54 @@ void MoveTo(int motor, double target_position){
 
   md.setMotorSpeed(motor, 0);
   return;
+}
+
+void open_both_sides(){
+  MoveTo(1, _StartPoint);
+  delay(100);
+  MoveTo(0, _StartPoint);
+}
+
+void close_both_sides(){
+  MoveTo(0, _EndPoint);
+  delay(100);
+  MoveTo(1, _EndPoint);
+}
+
+
+void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
+{
+  // Read Sensor values for every page reload
+  _sensorValue[0] = lh.get_mean(0, 100);
+  _sensorValue[1] = lh.get_mean(1, 100);
+  _currentValue[0] = md.get_mean(0, 100) / 1000.;
+  _currentValue[1] = md.get_mean(1, 100) / 1000.;
+
+  if (strncmp(requestContent, "Button5=", 8) == 0){
+    open_both_sides();
+  }
+  else if (strncmp(requestContent, "Button6=", 8) == 0){
+    close_both_sides();
+  }
+
+  // send HTML header
+  // sendProgMemAsString(client,(char*)pgm_read_word(&(contents_main[CONT_HEADER])));
+  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_main[CONT_TOP])));
+
+  // send menu
+  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_main[CONT_MENU])));
+
+  // send title
+  sendProgMemAsString(client, (char*)pgm_read_word(&(contents_titles[nUriIndex])));
+
+  // send the body for the requested page
+  sendUriContentByIndex(client, nUriIndex, requestContent);
+
+  // Append the data sent in the original HTTP request
+  client.print("<br/>");
+  // send POST variables
+  client.print(requestContent);
+
+  // send footer
+  sendProgMemAsString(client,(char*)pgm_read_word(&(contents_main[CONT_FOOTER])));
 }
