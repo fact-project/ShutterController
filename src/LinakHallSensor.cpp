@@ -22,7 +22,7 @@ unsigned int LinakHallSensor::getS2()
   return analogRead(_S2);
 }
 
-unsigned int get(int sensor_id)
+unsigned int LinakHallSensor::get(int sensor_id)
 {
   if (sensor_id==0){
     return getS1();
@@ -31,7 +31,7 @@ unsigned int get(int sensor_id)
   }
 }
 
-double get_mean(int motor, int samples)
+double LinakHallSensor::get_mean(int motor, int samples)
 {
   double tmp = 0;
   for (int j=0;j<samples;j++) {
