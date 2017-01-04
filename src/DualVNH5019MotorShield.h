@@ -17,6 +17,7 @@ class DualVNH5019MotorShield
     void setM1Speed(int speed); // Set speed for M1.
     void setM2Speed(int speed); // Set speed for M2.
     void setMotorSpeed(int motor, int speed); // choose motor as int: 0 -> M1 and 1 -> M2
+    int getMotorSpeed(int motor);
     void setSpeeds(int m1Speed, int m2Speed); // Set speed for both M1 and M2.
     void setM1Brake(int brake); // Brake M1.
     void setM2Brake(int brake); // Brake M2.
@@ -37,6 +38,8 @@ class DualVNH5019MotorShield
     static const unsigned char _PWM2 = 6;
     unsigned char _CS2;
 
+    int current_speed_M1 = 0;
+    int current_speed_M2 = 0;
 };
 
 #endif

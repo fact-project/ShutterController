@@ -70,7 +70,7 @@ void DualVNH5019MotorShield::init()
 void DualVNH5019MotorShield::setM1Speed(int speed)
 {
   unsigned char reverse = 0;
-
+  current_speed_M1 = speed;
   if (speed < 0)
   {
     speed = -speed;  // Make speed a positive quantity
@@ -104,7 +104,7 @@ void DualVNH5019MotorShield::setM1Speed(int speed)
 void DualVNH5019MotorShield::setM2Speed(int speed)
 {
   unsigned char reverse = 0;
-
+  current_speed_M2 = speed;
   if (speed < 0)
   {
     speed = -speed;  // make speed a positive quantity
@@ -139,6 +139,14 @@ void DualVNH5019MotorShield::setMotorSpeed(int motor, int speed){ // choose moto
     setM1Speed(speed);
   } else {
     setM2Speed(speed);
+  }
+}
+
+int DualVNH5019MotorShield::getMotorSpeed(int motor){
+  if(motor == 0){
+    return current_speed_M1;
+  } else {
+    return current_speed_M2;
   }
 }
 
@@ -242,4 +250,16 @@ tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, int samples){
   tmp.std = sqrt(tmp.std / samples - tmp.mean * tmp.mean);
 
   return tmp;
+}
+
+void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)
+{
+  while (getMotorSpeed(motor) != speed){
+    if (getMotorSpeed(motor) < speed){
+      setMotorSpeed(motor, getMotorSpeed(motor) + 1);
+    } else {
+      setMotorSpeed(motor, getMotorSpeed(motor) - 1);
+    }
+    delay(1);
+  }
 }
