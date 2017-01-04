@@ -186,7 +186,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
 void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
 int GetUriIndex(char * pUri);
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
-double ReadSensorM(int motor, int samples);
 double ReadCurrentM(int motor,  int samples);
 void MoveTo(int motor, double target_position, int mySpeed);
 void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
