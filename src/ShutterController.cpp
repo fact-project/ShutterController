@@ -169,7 +169,7 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
 void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
 int GetUriIndex(char * pUri);
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
-void MoveTo(int motor, double target_position, int mySpeed);
+void MoveTo(int motor, double target_position);
 void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
 void sendProgMemAsBinary(EthernetClient & client, const char* realword, int realLen);
 
@@ -482,29 +482,29 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
 
   if (strncmp(requestContent, "Button1=", 8) == 0){
     //Action1(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _EndPoint, maximum_speed);
+    MoveTo(0, _EndPoint);
   }
   else if (strncmp(requestContent, "Button2=", 8) == 0){
     //Action2(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _StartPoint, maximum_speed);
+    MoveTo(0, _StartPoint);
   }
   else if (strncmp(requestContent, "Button3=", 8) == 0){
     //Action3(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _EndPoint, maximum_speed);
+    MoveTo(1, _EndPoint);
   }
   else if (strncmp(requestContent, "Button4=", 8) == 0){
     //Action4(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _StartPoint, maximum_speed);
+    MoveTo(1, _StartPoint);
   }
   else if (strncmp(requestContent, "Button5=", 8) == 0){
-    MoveTo(1, _StartPoint, maximum_speed);
+    MoveTo(1, _StartPoint);
     delay(100);
-    MoveTo(0, _StartPoint, maximum_speed);
+    MoveTo(0, _StartPoint);
   }
   else if (strncmp(requestContent, "Button6=", 8) == 0){
-    MoveTo(0, _EndPoint, maximum_speed);
+    MoveTo(0, _EndPoint);
     delay(100);
-    MoveTo(1, _EndPoint, maximum_speed);
+    MoveTo(1, _EndPoint);
   }
 
   // send HTML header
@@ -701,7 +701,7 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 }
 
 
-void MoveTo(int motor, double target_position, int mySpeed){
+void MoveTo(int motor, double target_position){
   // define variable containing the current actuator position
   // the travel to be done to rech the target position and the
   // motor current
@@ -752,7 +752,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
       steps++;
       _LidStatus[motor] = _CLOSING;
 
-      md.ramp_to_speed_blocking(motor, mySpeed);
+      md.ramp_to_speed_blocking(motor, maximum_speed);
     }
     else{
       Serial.println(" - already closed");
@@ -777,7 +777,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
     steps++;
     _LidStatus[motor] = _OPENING;
 
-    md.ramp_to_speed_blocking(motor, -mySpeed);
+    md.ramp_to_speed_blocking(motor, -maximum_speed);
   }
 
 
