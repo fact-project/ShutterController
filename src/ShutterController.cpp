@@ -61,9 +61,6 @@ double  _sensorValue[2]    = {0,0};
 double  _currentValue[2]   = {0,0};
 uint8_t _LidStatus[2]      = {0,0};
 
-extern int  __bss_end;
-extern void *__brkval;
-
 // Http header token delimiters
 const char *pSpDelimiters = " \r\n";
 const char *pStxDelimiter = "\002";    // STX - ASCII start of text character
@@ -175,7 +172,7 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 void MoveTo(int motor, double target_position, int mySpeed);
 void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
 void sendProgMemAsBinary(EthernetClient & client, const char* realword, int realLen);
-int availableMemory();
+
 
 byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
 IPAddress _ip(10, 0, 100, 36);
@@ -985,17 +982,5 @@ void MoveTo(int motor, double target_position, int mySpeed){
   Serial.println(_StatusLabel[_LidStatus[motor]]);
 
   Serial.print("AvailableMemory()=");
-  Serial.println(availableMemory());
-
-
-}
-
-int availableMemory() {
-  int free_memory;
-  if ((int)__brkval==0)
-    free_memory = ((int)&free_memory) - ((int) &__bss_end);
-  else
-    free_memory = ((int)&free_memory) - ((int) &__brkval);
-
-  return free_memory;
+  Serial.println(tools::availableMemory());
 }
