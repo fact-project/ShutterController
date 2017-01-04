@@ -93,13 +93,16 @@ void send_status_human_readable(EthernetClient & client)
     client.print(i+1);
     client.print(" I=");
     client.print(current.mean);
-    client.print("+- ");
+    client.print("+-");
     client.print(current.std);
     client.print(" pos=");
     client.print(position.mean);
     client.print("+-");
     client.print(position.std);
-    client.print("  ");
+    client.print(" S:");
+    client.print(md.getMotorSpeed(i));
+    client.print(" ");
+
   }
   client.println();
 
