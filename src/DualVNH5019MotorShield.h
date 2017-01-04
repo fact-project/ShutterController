@@ -2,6 +2,7 @@
 #define DualVNH5019MotorShield_h
 
 #include <Arduino.h>
+#include "tools.h"
 
 class DualVNH5019MotorShield
 {
@@ -24,6 +25,7 @@ class DualVNH5019MotorShield
     unsigned int getM2CurrentMilliamps(); // Get current reading for M2.
     unsigned int getCurrentMilliamps(int motor);
     unsigned int get_mean(int motor, int samples);
+    tools::mean_std_t get_mean_std(int motor, int samples);
 
   private:
     unsigned char _INA1;

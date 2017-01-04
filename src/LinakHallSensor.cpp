@@ -39,3 +39,21 @@ double LinakHallSensor::get_mean(int motor, int samples)
   }
   return tmp/samples;
 }
+
+tools::mean_std_t LinakHallSensor::get_mean_std(int motor, int samples){
+  tools::mean_std_t tmp;
+  tmp.mean = 0.;
+  tmp.std = 0.;
+
+  unsigned int foo;
+  for (int i=0; i<samples; i++)
+  {
+    foo = get(motor);
+    tmp.mean += foo;
+    tmp.std += foo * foo;
+  }
+  tmp.mean /= samples;
+  tmp.std = sqrt(tmp.std / samples - tmp.mean * tmp.mean);
+
+  return tmp;
+}

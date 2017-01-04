@@ -2,6 +2,7 @@
 #define LinakHallSensor_h
 
 #include <Arduino.h>
+#include "tools.h"
 
 class LinakHallSensor
 {
@@ -14,6 +15,7 @@ class LinakHallSensor
     unsigned int getS2();
     unsigned int get(int sensor_id);
     double get_mean(int motor, int samples);
+    tools::mean_std_t get_mean_std(int motor, int samples);
 
   private:
     unsigned char _S1;
