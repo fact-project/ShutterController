@@ -741,9 +741,6 @@ void MoveTo(int motor, double target_position){
 
 
   // Start the main loop which checks the motors while they are mooving
-  double tmp=0;
-  double tmpM=0;
-  double tmpS=0;
   for (steps=1;abs(travel) != 0 ;steps++){
     //Read Current
     _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
@@ -755,11 +752,6 @@ void MoveTo(int motor, double target_position){
       _LidStatus[motor] = _OVER_CURRENT;
       return;
     }
-
-    // Average Current around the steps
-    tmp   =  motor_current;
-    tmpM += tmp;
-    tmpS += tmp*tmp;
 
     // Read current position
     // it doesn't make sense to read it here more time as the actuars are moving
@@ -810,20 +802,8 @@ void MoveTo(int motor, double target_position){
 
   // At this stage the motor should be stopped in any case
   md.setMotorSpeed(motor, 0);
-
-  // Calculate current average and sigma
-  tmpM /= steps;
-  tmpS  = sqrt(tmpS/steps - tmpM*tmpM);
-
   // Wait 100 ms then calculate average final position
+  // calculation was for Serial.print() only, but waiting,
+  // might be good anyway.
   delay(100);
-  tmp=0; tmpM=0; tmpS=0;
-
-  for (int i=0;i<SAMPLES;i++){
-    tmp=lh.get(motor);
-    tmpM += tmp;
-    tmpS += tmp*tmp;
-  }
-  tmpM /= SAMPLES;
-  tmpS  = sqrt(tmpS/SAMPLES - tmpM*tmpM);
 }
