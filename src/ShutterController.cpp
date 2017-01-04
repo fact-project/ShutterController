@@ -1016,25 +1016,6 @@ int availableMemory() {
   return free_memory;
 }
 
-// ReadCurrent(-1); - Read current for all the motors
-// ReadCurrent(0);  - Read motor 0 current
-// ReadCurrent(1);  - Read motor 1 current
-double ReadCurrent(int motor){
-  switch (motor){
-    case -1: // Read all of them
-      _currentValue[0] =  analogRead(A4)*_ADC2V/(_V2A*10.);
-      _currentValue[1] =  analogRead(A5)*_ADC2V/(_V2A*10.);
-      Serial.println("Action->ReadSensors()");
-      return -1;
-    case 0:
-      _currentValue[motor] =  analogRead(A4)*_ADC2V/(_V2A*10.);
-       return _currentValue[motor]; // Current of the motor
-    case 1:
-      _currentValue[motor] =  analogRead(A5)*_ADC2V/(_V2A*10.);
-      return _currentValue[motor]; // Current of the motor
-  }
-}
-
 double ReadCurrentM(int motor,  int samples){
   switch (motor){
     case -1: // Read all of them
