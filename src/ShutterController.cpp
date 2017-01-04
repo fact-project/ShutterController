@@ -716,7 +716,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
   double err_original_position;
 
   double motor_current;
-  double err_motor_current;
 
   double travel;
 
