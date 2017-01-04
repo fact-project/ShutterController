@@ -326,8 +326,6 @@ MethodType readRequestLine(EthernetClient & client, BUFFER & readBuffer, int & n
     for (pQuery = requestContent; (pQuery = strchr(pQuery, '+')) != NULL; )
       *pQuery = ' ';    // Found a '+' so replace with a space
 
-//    Serial.print("Get query string: ");
-//    Serial.println(requestContent);
   }
   if (strcmp(pMethod, "GET") == 0){
     eMethod = MethodGet;
@@ -402,9 +400,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
   }
 
   content[nContentLength] = 0;  // Null string terminator
-
-//  Serial.print("Content: ");
-//  Serial.println(content);
 }
 
 // See if we recognize the URI and get its index; or -1 if we don't recognize it.
@@ -422,11 +417,6 @@ int GetUriIndex(char * pUri)
       break;
     }
   }
-//  Serial.print("URI: ");
-//  Serial.print(pUri);
-//  Serial.print(" Page: ");
-//  Serial.println(nUriIndex);
-
   return nUriIndex;
 }
 
@@ -568,9 +558,6 @@ void sendProgMemAsBinary(EthernetClient & client, const char* realword, int real
 
     memcpy_P(buffer, offsetPtr, nSize);
 
-    if (client.write((const uint8_t *)buffer, nSize) != nSize)
-      Serial.println("Failed to send data");
-
     // more content to print?
     remaining -= nSize;
     offsetPtr += nSize;
@@ -666,7 +653,6 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
         }
         break;
       case 2:  // page 3
-        Serial.println(" -> Case 2");
         break;
     }
   }
@@ -681,7 +667,6 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
         // Content-Length value - ie. image size
         char strSize[6];  // Up to 5 digits plus null terminator
         itoa((int)pgm_read_word(&(size_for_images[nImageIndex])), strSize, 10);
-        //Serial.println(strSize);    // Debug
         client.print(strSize);
         break;
       case 1:
@@ -722,41 +707,18 @@ void MoveTo(int motor, double target_position){
   // calculate the travel needed to reach the target position
   travel = target_position - current_position;
 
-  Serial.print("Moving motor ");
-  Serial.print(motor);
-  Serial.print(" from pos. ");
-  Serial.print(current_position,3);
-  Serial.print(" to position ");
-  Serial.print(target_position,3);
-  Serial.print(" - Travel distance = ");
-  Serial.println(travel,3);
-
-  Serial.print(" - The current position of the actuator is ");
-  Serial.print(position.mean, 3);
-  Serial.print( " +/- " );
-  Serial.println(position.std, 3);
-
-  Serial.print(" - The corrected position of the actuator is ");
-  Serial.print(current_position);
-  Serial.print( " +/- " );
-  Serial.println(err_current_position);
-
   int    steps=0;
   // [IF] the travel is bigger than +2*(absolute position error) try to move out the motor
   if (travel > 2*err_current_position){
     // Try to place here (if you have time) a speed self adjucting algorithm
     // base on the trave which the actuator has still to do
     if( _LidStatus[motor] != _CLOSED){
-
-      Serial.println(" - going out (lid closing)");
       steps++;
       _LidStatus[motor] = _CLOSING;
 
       md.ramp_to_speed_blocking(motor, maximum_speed);
     }
     else{
-      Serial.println(" - already closed");
-
       _LidStatus[motor] = _CLOSED;
       return;
     }
@@ -765,15 +727,12 @@ void MoveTo(int motor, double target_position){
   //           consider yourself already in position
   else if (travel <=  2*err_current_position &&
            travel >= -2*err_current_position    ){
-    Serial.println(" - already in place");
-
     _LidStatus[motor] = _STEADY;
     return;
     // already in place don't bother moving more.
   }
   // [ELSE} if the travel is smaller than -2*(absolute position error) try to move in the motor
   else{
-    Serial.println(" - going in (lid opening)");
     steps++;
     _LidStatus[motor] = _OPENING;
 
@@ -793,12 +752,6 @@ void MoveTo(int motor, double target_position){
     // If Overcurrent stop
     if (motor_current > _OverCurrent){
       md.setMotorSpeed(motor, 0);
-
-      Serial.print(" - WARNING!!! Overcurrent ");
-      Serial.print(motor_current,3);
-      Serial.print(" [A] at position ");
-      Serial.println(current_position,3);
-
       _LidStatus[motor] = _OVER_CURRENT;
       return;
     }
@@ -825,58 +778,28 @@ void MoveTo(int motor, double target_position){
     if (motor_current < _ZeroCurrent){
       // Closing
       if ( current_position > _EndPointLimit && target_position > _EndPointLimit ){
-        Serial.print(" - Reached End of Actuator. Pos = ");
-        Serial.println(current_position, 3);
-
         _LidStatus[motor] = _CLOSED;
         break; //Exit from the for loop
       }
       // Opening
       else if (current_position < _StartPointLimit && target_position < _StartPointLimit ){
-        Serial.print(" - Reached Beginning of Actuator. Pos = ");
-        Serial.println(current_position, 3);
-
         _LidStatus[motor] = _OPEN;
         break; //Exit from the for loop
       }
       // Error
       else  {
-        Serial.print(" - Error!! No current in motor ");
-        Serial.print(motor);
-        Serial.print(". I= ");
-        Serial.print(motor_current);
-        Serial.print("A . Pos = ");
-        Serial.println(current_position, 3);
-
         _LidStatus[motor]  = _POWER_PROBLEM;
         break; //Exit from the for loop
       }
     }
 
    if (_LidStatus[motor] == _CLOSING && motor_current > _CurrentPushingLimit && current_position > _EndPointLimit){
-      Serial.print(" - step ");
-      Serial.print(steps);
-      Serial.print(" - pushing -> I = ");
-      Serial.print(motor_current, 3);
-      Serial.println(" A");
       _LidStatus[motor] = _CLOSED;
       break;
     }
 
     // If too many cycles of the loop print a message and check the position and the current
     if (steps %50 == 0){
-      Serial.print(" - step ");
-      Serial.print(steps);
-      Serial.print(" - still in loop. Pos = ");
-      Serial.print(current_position, 3);
-      Serial.print(" - Istantaneous current = ");
-      Serial.print(motor_current, 3);
-      Serial.print(" A");
-      Serial.print(" - Average current = ");
-      Serial.print(tmpM/steps, 3);
-      Serial.println(" A");
-
-
       if( _LidStatus[motor] != _CLOSING && _LidStatus[motor] != _OPENING)
         _LidStatus[motor] = _MOVING;
     }
@@ -887,16 +810,10 @@ void MoveTo(int motor, double target_position){
 
   // At this stage the motor should be stopped in any case
   md.setMotorSpeed(motor, 0);
-  Serial.print(" - motor reached the destination - pos. ");
-  Serial.println(current_position,3);
 
   // Calculate current average and sigma
   tmpM /= steps;
   tmpS  = sqrt(tmpS/steps - tmpM*tmpM);
-  Serial.print(" - average current over the loop ");
-  Serial.print(tmpM,3);
-  Serial.print( " +/- " );
-  Serial.println(tmpS,3);
 
   // Wait 100 ms then calculate average final position
   delay(100);
@@ -909,15 +826,4 @@ void MoveTo(int motor, double target_position){
   }
   tmpM /= SAMPLES;
   tmpS  = sqrt(tmpS/SAMPLES - tmpM*tmpM);
-
-  Serial.print(" - final position is ");
-  Serial.print(tmpM,3);
-  Serial.print( " +/- " );
-  Serial.println(tmpS,3);
-
-  Serial.print(" - Lid staus is ");
-  Serial.println(_StatusLabel[_LidStatus[motor]]);
-
-  Serial.print("AvailableMemory()=");
-  Serial.println(tools::availableMemory());
 }
