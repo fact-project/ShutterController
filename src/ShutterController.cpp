@@ -186,7 +186,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
 void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
 int GetUriIndex(char * pUri);
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
-double ReadSensor(int motor);
 double ReadSensorM(int motor, int samples);
 double ReadCurrentM(int motor,  int samples);
 void MoveTo(int motor, double target_position, int mySpeed);
@@ -742,7 +741,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
   double travel;
 
   // only one reading to define the position is not sufficient
-  // current_position = ReadSensor(motor);
+  // current_position = lh.get(motor);
 
   // Calculate average final position
   double tmp=0;
