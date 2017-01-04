@@ -688,13 +688,13 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 
 void MoveTo(int motor, double target_position){
   // define variable containing the current actuator position
-  // the travel to be done to rech the target position and the
+  // the distance to be done to rech the target position and the
   // motor current
   double current_position;
   double err_current_position;
   double motor_current;
 
-  double travel;
+  double distance;
 
   tools::mean_std_t position = lh.get_mean_std(motor, SAMPLES);
   current_position = round(position.mean);
@@ -704,12 +704,12 @@ void MoveTo(int motor, double target_position){
   else{
     err_current_position = position.std;
   }
-  // calculate the travel needed to reach the target position
-  travel = target_position - current_position;
+  // calculate the distance needed to reach the target position
+  distance = target_position - current_position;
 
   int    steps=0;
-  // [IF] the travel is bigger than +2*(absolute position error) try to move out the motor
-  if (travel > 2*err_current_position){
+  // [IF] the distance is bigger than +2*(absolute position error) try to move out the motor
+  if (distance > 2*err_current_position){
     if( _LidStatus[motor] != _CLOSED){
       steps++;
       _LidStatus[motor] = _CLOSING;
@@ -721,15 +721,15 @@ void MoveTo(int motor, double target_position){
       return;
     }
   }
-  // [ELSE IF] travel is between -2*(absolute position error) and +2*(absolute position error)
+  // [ELSE IF] distance is between -2*(absolute position error) and +2*(absolute position error)
   //           consider yourself already in position
-  else if (travel <=  2*err_current_position &&
-           travel >= -2*err_current_position    ){
+  else if (distance <=  2*err_current_position &&
+           distance >= -2*err_current_position    ){
     _LidStatus[motor] = _STEADY;
     return;
     // already in place don't bother moving more.
   }
-  // [ELSE} if the travel is smaller than -2*(absolute position error) try to move in the motor
+  // [ELSE} if the distance is smaller than -2*(absolute position error) try to move in the motor
   else{
     steps++;
     _LidStatus[motor] = _OPENING;
@@ -739,7 +739,7 @@ void MoveTo(int motor, double target_position){
 
 
   // Start the main loop which checks the motors while they are mooving
-  for (steps=1;abs(travel) != 0 ;steps++){
+  for (steps=1;abs(distance) != 0 ;steps++){
     //Read Current
     _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
     motor_current = _currentValue[motor];
@@ -756,12 +756,7 @@ void MoveTo(int motor, double target_position){
     _sensorValue[motor] = lh.get_mean(motor, 10);
     current_position = _sensorValue[motor];
 
-    // Calculate travel distance
-    travel           = target_position - current_position;
-
-    // Read current absorbed the motor and append the values for the calculation
-    // of the mean value and its error
-
+    distance = target_position - current_position;
 
     // [IF] the current drops below ~0.07 A might means that the end swirch
     //      stopped the motor check also the position to determine if this is true.
