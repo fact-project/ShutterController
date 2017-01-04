@@ -27,6 +27,7 @@ class DualVNH5019MotorShield
     unsigned int getCurrentMilliamps(int motor);
     unsigned int get_mean(int motor, int samples);
     tools::mean_std_t get_mean_std(int motor, int samples);
+    void ramp_to_speed_blocking(int motor, int speed);
 
   private:
     unsigned char _INA1;
