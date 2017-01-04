@@ -720,34 +720,13 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
   double travel;
 
-  // only one reading to define the position is not sufficient
-  // current_position = lh.get(motor);
-
-  // Calculate average final position
-  double tmp=0;
-  double tmpM=0;
-  double tmpS=0;
-  int    steps=0;
-
-  for (int i=0;i<SAMPLES;i++){
-
-    tmp=lh.get(motor);
-    tmpM += tmp;
-    tmpS += tmp*tmp;
-  }
-  tmpM /= SAMPLES;
-  tmpS  = sqrt(tmpS/SAMPLES - tmpM*tmpM);
-
-
-  int tmpS_int = (int) tmpS;
-
-  // round the mean to it to the closest integer
-  current_position = (int) (tmpM+0.5);
-  if (((int)tmpS) < 1){
+  tools::mean_std_t position = lh.get_mean_std(motor, SAMPLES);
+  current_position = round(position.mean);
+  if (((int)position.std) < 1){
     err_current_position =     1.;
   }
   else{
-    err_current_position = tmpS;
+    err_current_position = position.std;
   }
 
   original_position      = current_position;
@@ -766,16 +745,16 @@ void MoveTo(int motor, double target_position, int mySpeed){
   Serial.println(travel,3);
 
   Serial.print(" - The current position of the actuator is ");
-  Serial.print(tmpM,3);
+  Serial.print(position.mean, 3);
   Serial.print( " +/- " );
-  Serial.println(tmpS,3);
+  Serial.println(position.std, 3);
 
   Serial.print(" - The corrected position of the actuator is ");
   Serial.print(current_position);
   Serial.print( " +/- " );
   Serial.println(err_current_position);
 
-
+  int    steps=0;
   // [IF] the travel is bigger than +2*(absolute position error) try to move out the motor
   if (travel > 2*err_current_position){
     // Try to place here (if you have time) a speed self adjucting algorithm
@@ -826,9 +805,9 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
 
   // Start the main loop which checks the motors while they are mooving
-  tmp=0;
-  tmpM=0;
-  tmpS=0;
+  double tmp=0;
+  double tmpM=0;
+  double tmpS=0;
   for (steps=1;abs(travel) != 0 ;steps++){
     //Read Current
     _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
