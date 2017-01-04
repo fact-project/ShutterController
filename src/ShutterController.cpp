@@ -701,10 +701,6 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 
 
 void MoveTo(int motor, double target_position, int mySpeed){
-
-  // define tmp value for the speed
-  int speedTmp = 0;
-
   // define variable containing the current actuator position
   // the travel to be done to rech the target position and the
   // motor current
@@ -752,15 +748,10 @@ void MoveTo(int motor, double target_position, int mySpeed){
     if( _LidStatus[motor] != _CLOSED){
 
       Serial.println(" - going out (lid closing)");
-      speedTmp = mySpeed; // positive speed
       steps++;
       _LidStatus[motor] = _CLOSING;
 
-      // Accelerate motor from 0 to speedTmp linearly
-      for (int j=0;j<speedTmp;j++){
-        md.setMotorSpeed(motor, j);
-        delay(1);
-      }
+      md.ramp_to_speed_blocking(motor, mySpeed);
     }
     else{
       Serial.println(" - already closed");
@@ -782,15 +773,10 @@ void MoveTo(int motor, double target_position, int mySpeed){
   // [ELSE} if the travel is smaller than -2*(absolute position error) try to move in the motor
   else{
     Serial.println(" - going in (lid opening)");
-    speedTmp = -mySpeed; // negative speed
     steps++;
     _LidStatus[motor] = _OPENING;
 
-    // Accelerate motor from 0 to -speedTmp linearly
-    for (int j=0;j>speedTmp;j--){
-      md.setMotorSpeed(motor, j);
-      delay(1);
-    }
+    md.ramp_to_speed_blocking(motor, -mySpeed);
   }
 
 
