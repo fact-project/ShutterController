@@ -713,7 +713,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
   double err_current_position;
 
   double original_position;
-  double err_original_position;
 
   double motor_current;
 
@@ -729,8 +728,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
   }
 
   original_position      = current_position;
-  err_original_position  = err_current_position;
-
   // calculate the travel needed to reach the target position
   travel = target_position - current_position;
 
