@@ -710,8 +710,6 @@ void MoveTo(int motor, double target_position){
   int    steps=0;
   // [IF] the travel is bigger than +2*(absolute position error) try to move out the motor
   if (travel > 2*err_current_position){
-    // Try to place here (if you have time) a speed self adjucting algorithm
-    // base on the trave which the actuator has still to do
     if( _LidStatus[motor] != _CLOSED){
       steps++;
       _LidStatus[motor] = _CLOSING;
