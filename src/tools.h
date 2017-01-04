@@ -9,4 +9,4 @@ namespace tools
     int availableMemory();
 };
 
-#endif tools_h
+#endif // tools_h
