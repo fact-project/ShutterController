@@ -314,7 +314,6 @@ MethodType readRequestLine(EthernetClient & client, BUFFER & readBuffer, int & n
   // Split it into the 3 tokens
   char * pMethod  = strtok(readBuffer, pSpDelimiters);
   char * pUri     = strtok(NULL, pSpDelimiters);
-  char * pVersion = strtok(NULL, pSpDelimiters);
   // URI may optionally comprise the URI of a queryable object a '?' and a query
   // see http://www.ietf.org/rfc/rfc1630.txt
   strtok(pUri, "?");
