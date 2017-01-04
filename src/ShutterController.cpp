@@ -711,9 +711,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
   // motor current
   double current_position;
   double err_current_position;
-
-  double original_position;
-
   double motor_current;
 
   double travel;
@@ -726,8 +723,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
   else{
     err_current_position = position.std;
   }
-
-  original_position      = current_position;
   // calculate the travel needed to reach the target position
   travel = target_position - current_position;
 
@@ -875,7 +870,6 @@ void MoveTo(int motor, double target_position, int mySpeed){
    if (_LidStatus[motor] == _CLOSING && motor_current > _CurrentPushingLimit && current_position > _EndPointLimit){
       Serial.print(" - step ");
       Serial.print(steps);
-      // double travel_done= (55. * (target_position - original_position))/1024.;
       // Serial.print(" - travelled for ");
       // Serial.print(travel_done);
       Serial.print(" - pushing -> I = ");
