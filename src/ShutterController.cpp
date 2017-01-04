@@ -203,43 +203,42 @@ void setup()
   lh.init();
 }
 
+void send_status(EthernetClient & client)
+{
+  tools::mean_std_t tmp;
+  tmp = md.get_mean_std(0, 10);
+  client.write(&tmp, sizeof(tools::mean_std_t));
+
+  tmp = md.get_mean_std(1, 10);
+  client.write(&tmp, sizeof(tools::mean_std_t));
+
+  tmp = lh.get_mean_std(0, 10);
+  client.write(&tmp, sizeof(tools::mean_std_t));
+
+  tmp = lh.get_mean_std(1, 10);
+  client.write(&tmp, sizeof(tools::mean_std_t));
+}
+
+void check_for_client_send_status()
+{
+  EthernetClient client = server.available();
+  if (client) {
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+      }
+    }
+    send_status(client);
+    client.stop();
+  }
+}
 /**********************************************************************************************************************
 *                                                           Main loop
 ***********************************************************************************************************************/
 
 void loop()
 {
-  EthernetClient client = server.available();
-  if (client)
-  {
-      // now client is connected to arduino we need to extract the
-    // following fields from the HTTP request.
-    int    nUriIndex;  // Gives the index into table of recognized URIs or -1 for not found.
-    BUFFER requestContent;    // Request content as a null-terminated string.
-    readHttpRequest(client, nUriIndex, requestContent);
-
-    if (nUriIndex < 0)
-    {
-      // URI not found
-      sendProgMemAsString(client, (char*)pgm_read_word(&content_404));
-    }
-    else if (nUriIndex < NUM_PAGES)
-    {
-      // Normal page request, may depend on content of the request
-      sendPage(client, nUriIndex, requestContent);
-    }
-    else
-    {
-      // Image request
-      sendImage(client, nUriIndex, requestContent);
-    }
-
-    // give the web browser time to receive the data
-    //  delay(1);
-    delay(100);
-
-    client.stop();
-  }
+  check_for_client_send_status();
 }
 
 /**********************************************************************************************************************
