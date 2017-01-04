@@ -224,7 +224,7 @@ void loop()
     // following fields from the HTTP request.
     int    nUriIndex;  // Gives the index into table of recognized URIs or -1 for not found.
     BUFFER requestContent;    // Request content as a null-terminated string.
-    MethodType eMethod = readHttpRequest(client, nUriIndex, requestContent);
+    readHttpRequest(client, nUriIndex, requestContent);
 
     if (nUriIndex < 0)
     {
