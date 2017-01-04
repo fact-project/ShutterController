@@ -17,8 +17,6 @@
 
 #include "ShutterController.h"
 
-#define SAMPLES  100
-
 // Each value is the real current value in the motors;
 // Define Current Limits in [A] - Offset is 0.5A for no load on the motors
 // pushing coefficient ~100 Kg/A
@@ -687,65 +685,37 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 
 
 void MoveTo(int motor, double target_position){
-  tools::mean_std_t position = lh.get_mean_std(motor, SAMPLES);
-  double distance = target_position - round(position.mean);
-
-  // [IF] the distance is bigger than +2*(absolute position error) try to move out the motor
-  if (distance > 2*position.std){
-    if( _LidStatus[motor] != _CLOSED){
-      _LidStatus[motor] = _CLOSING;
-
-      md.ramp_to_speed_blocking(motor, maximum_speed);
-    }
-    else{
-      _LidStatus[motor] = _CLOSED;
-      return;
-    }
-  }
-  // [ELSE IF] distance is between -2*(absolute position error) and +2*(absolute position error)
-  //           consider yourself already in position
-  else if (distance <=  2*position.std &&
-           distance >= -2*position.std    ){
-    _LidStatus[motor] = _STEADY;
-    return;
-    // already in place don't bother moving more.
-  }
-  // [ELSE} if the distance is smaller than -2*(absolute position error) try to move in the motor
-  else{
-    _LidStatus[motor] = _OPENING;
-
-    md.ramp_to_speed_blocking(motor, -maximum_speed);
-  }
-
-
-  // Start the main loop which checks the motors while they are mooving
-  while(abs(distance) != 0){
-    //Read Current
-    _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
-    double motor_current = _currentValue[motor];
-
+  tools::mean_std_t position = lh.get_mean_std(motor, 10);
+  while(abs(target_position - position.mean) > 2*position.std)
+  {
     if (md.is_overcurrent(motor)){
       _LidStatus[motor] = _OVER_CURRENT;
       return;
     }
 
-    // Read current position
-    // it doesn't make sense to read it here more time as the actuars are moving
-    _sensorValue[motor] = lh.get_mean(motor, 10);
-    double current_position = _sensorValue[motor];
+    if (target_position > position.mean)
+    {
+      md.ramp_to_speed_blocking(motor, maximum_speed);
+      _LidStatus[motor] = _CLOSING;
+    }
+    else // if target_position < round(position.mean)
+    {
+      md.ramp_to_speed_blocking(motor, -maximum_speed);
+      _LidStatus[motor] = _OPENING;
+    }
 
-    distance = target_position - current_position;
+    position = lh.get_mean_std(motor, 10);
 
     // [IF] the current drops below ~0.07 A might means that the end swirch
     //      stopped the motor check also the position to determine if this is true.
-    if (motor_current < _ZeroCurrent){
+    if (md.get_mean(motor, 10) / 1000. < _ZeroCurrent){
       // Closing
-      if ( current_position > _EndPointLimit && target_position > _EndPointLimit ){
+      if ( position.mean > _EndPointLimit && target_position > _EndPointLimit ){
         _LidStatus[motor] = _CLOSED;
         break; //Exit from the for loop
       }
       // Opening
-      else if (current_position < _StartPointLimit && target_position < _StartPointLimit ){
+      else if (position.mean < _StartPointLimit && target_position < _StartPointLimit ){
         _LidStatus[motor] = _OPEN;
         break; //Exit from the for loop
       }
@@ -756,7 +726,7 @@ void MoveTo(int motor, double target_position){
       }
     }
 
-   if (_LidStatus[motor] == _CLOSING && motor_current > _CurrentPushingLimit && current_position > _EndPointLimit){
+   if (_LidStatus[motor] == _CLOSING && md.get_mean(motor, 10) / 1000. > _CurrentPushingLimit && current_position > _EndPointLimit){
       _LidStatus[motor] = _CLOSED;
       break;
     }
@@ -764,10 +734,7 @@ void MoveTo(int motor, double target_position){
     delay (10);
   }
 
-  // At this stage the motor should be stopped in any case
   md.setMotorSpeed(motor, 0);
-  // Wait 100 ms then calculate average final position
-  // calculation was for Serial.print() only, but waiting,
-  // might be good anyway.
-  delay(100);
+  _LidStatus[motor] = _STEADY;
+  return;
 }
