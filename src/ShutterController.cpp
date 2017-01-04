@@ -497,7 +497,8 @@ void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer)
 void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
 {
   // Read Sensor values for every page reload
-  ReadSensorM(-1,100);
+  _sensorValue[0] = lh.get_mean(0, 100);
+  _sensorValue[1] = lh.get_mean(1, 100);
   ReadCurrentM(-1,100);
 
   if (strncmp(requestContent, "Button1=", 8) == 0){
@@ -873,7 +874,8 @@ void MoveTo(int motor, double target_position, int mySpeed){
 
     // Read current position
     // it doesn't make sense to read it here more time as the actuars are moving
-    current_position = ReadSensorM(motor,10);
+    _sensorValue[motor] = lh.get_mean(motor, 10);
+    current_position = _sensorValue[motor];
 
     // Calculate travel distance
     travel           = target_position - current_position;
@@ -1014,40 +1016,6 @@ int availableMemory() {
 
   return free_memory;
 }
-
-
-double ReadSensorM(int motor, int samples){
-  switch (motor){
-    case -1: // Read all of them
-      _sensorValue[0] = 0;
-      _sensorValue[1] = 0;
-      for (int j=0;j<samples;j++){
-        _sensorValue[0] +=  analogRead(A2);
-        _sensorValue[1] +=  analogRead(A3); //771.9//mknoetig: this is the hackin ;
-      }
-      _sensorValue[0]/=samples;
-      _sensorValue[1]/=samples;
-      return -1;
-
-    case 0:
-      _sensorValue[motor]=0;
-      for (int j=0;j<samples;j++)
-        _sensorValue[motor] +=  analogRead(A2);//*_ADC2V - _Voffset; //*_Compensation;
-      _sensorValue[motor] /= samples;
-      return _sensorValue[motor]; // Actuator 1 position
-
-    case 1:
-      _sensorValue[motor]=0;
-      for (int j=0;j<samples;j++)
-        _sensorValue[motor] +=  analogRead(A3);//*_ADC2V - _Voffset;//_Compensation;
-      _sensorValue[motor] /= samples;
-      return _sensorValue[motor];
-      //_sensorValue[motor] = 771.9; // Actuator 1 position edit, mknoetig, more hacking: moto 1 actuator is broken now always report 771.9 in order to run it like in january
-      return _sensorValue[motor];
-  }
-
-}
-
 
 // ReadCurrent(-1); - Read current for all the motors
 // ReadCurrent(0);  - Read motor 0 current
