@@ -687,19 +687,11 @@ void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, 
 
 
 void MoveTo(int motor, double target_position){
-  double err_current_position;
   tools::mean_std_t position = lh.get_mean_std(motor, SAMPLES);
-  if (((int)position.std) < 1){
-    err_current_position =     1.;
-  }
-  else{
-    err_current_position = position.std;
-  }
-
   double distance = target_position - round(position.mean);
 
   // [IF] the distance is bigger than +2*(absolute position error) try to move out the motor
-  if (distance > 2*err_current_position){
+  if (distance > 2*position.std){
     if( _LidStatus[motor] != _CLOSED){
       _LidStatus[motor] = _CLOSING;
 
@@ -712,8 +704,8 @@ void MoveTo(int motor, double target_position){
   }
   // [ELSE IF] distance is between -2*(absolute position error) and +2*(absolute position error)
   //           consider yourself already in position
-  else if (distance <=  2*err_current_position &&
-           distance >= -2*err_current_position    ){
+  else if (distance <=  2*position.std &&
+           distance >= -2*position.std    ){
     _LidStatus[motor] = _STEADY;
     return;
     // already in place don't bother moving more.
