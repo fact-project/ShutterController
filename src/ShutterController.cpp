@@ -114,10 +114,10 @@ char check_for_client_send_status_return_command()
   char command = 0;
   if (Serial.available() > 0) {
     command = Serial.read();
-    send_status_human_readable();
-    Serial.print("command: ");
-    Serial.println(command);
   }
+  send_status_human_readable();
+  Serial.print("command: ");
+  Serial.println(command);
   return command;
 }
 
