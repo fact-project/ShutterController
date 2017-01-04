@@ -172,7 +172,6 @@ void readEntityBody(EthernetClient & client, int nContentLength, BUFFER & conten
 void getNextHttpLine(EthernetClient & client, BUFFER & readBuffer);
 int GetUriIndex(char * pUri);
 void sendSubstitute(EthernetClient client, int nUriIndex, int nSubstituteIndex, BUFFER & requestContent);
-double ReadCurrentM(int motor,  int samples);
 void MoveTo(int motor, double target_position, int mySpeed);
 void sendUriContentByIndex(EthernetClient client, int nUriIndex, BUFFER & requestContent);
 void sendProgMemAsBinary(EthernetClient & client, const char* realword, int realLen);
@@ -185,8 +184,8 @@ IPAddress _ip(10, 0, 100, 36);
 #include "LinakHallSensor.h"
 
 const int M1INA = 2;
-const int M2INA = 7;
 const int M1INB = 3;
+const int M2INA = 7;
 const int M2INB = 8;
 
 DualVNH5019MotorShield md(
