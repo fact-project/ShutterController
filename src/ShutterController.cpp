@@ -1,23 +1,26 @@
-/*
- * Web Server - for the FACT lid slow control
- * Need an Ethernet Shield over Arduino.
- *
- * based on the work of
- * Martyn Woerner
- * Alessandro Calzavara, alessandro(dot)calzavara(at)gmail(dot)com
- * and Alberto Capponi, bebbo(at)fast-labs net
- * for Arduino community! :-)
- *
- *
- */
-
 #include <SPI.h>
 #include <Ethernet.h>
-#include <avr/pgmspace.h>
 
 #include "ShutterController.h"
 
-uint8_t _LidStatus[2]      = {0,0};
+enum states_t {
+  _UNKNOWN        =  0,
+  _CLOSED         =  1,
+  _OPEN           =  2,
+  _STEADY         =  3,
+  _MOVING         =  4,
+  _CLOSING        =  5,
+  _OPENING        =  6,
+  _JAMMED         =  7,
+  _MOTOR_FAULT    =  8,
+  _POWER_PROBLEM  =  9,
+  _OVER_CURRENT   = 10
+};
+
+const int _StartPoint      =     0;
+const int _EndPoint        =  1024;
+
+states_t _LidStatus[2]      = {_UNKNOWN, _UNKNOWN};
 
 
 
@@ -83,8 +86,8 @@ void send_status(EthernetClient & client)
 void send_status_human_readable(EthernetClient & client)
 {
   for (int i=0; i<2; i++){
-    tools::mean_std_t current = md.get_mean_std(i, 10);
-    tools::mean_std_t position = lh.get_mean_std(i, 10);
+    tools::mean_std_t current = md.get_mean_std(i, 100);
+    tools::mean_std_t position = lh.get_mean_std(i, 100);
 
     client.print("M");
     client.print(i+1);
