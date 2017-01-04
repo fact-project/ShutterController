@@ -1012,16 +1012,11 @@ int availableMemory() {
 }
 
 
-// ReadSensor(-1); - Read all sensor
 // ReadSensor(0);  - Read sensor 0
 // ReadSensor(1);  - Read sensor 1
 double ReadSensor(int motor){
 
   switch (motor){
-    case -1: // Read all of them
-      _sensorValue[0] =  analogRead(A2);//*_ADC2V - _Voffset;// *_Compensation;          // Actuator 1 position
-      _sensorValue[1] =  analogRead(A3); //771.9;//mknoetig: this is the hackin analogRead(A3);//*_ADC2V - _Voffset;// *_Compensation;          // Actuator 2 position
-      return -1;
     case 0:
       _sensorValue[motor] =  analogRead(A2);//*_ADC2V - _Voffset; //*_Compensation;
       return _sensorValue[motor]; // Actuator 1 position
