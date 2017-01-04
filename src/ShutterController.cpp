@@ -184,6 +184,7 @@ const int M1INA = 2;
 const int M1INB = 3;
 const int M2INA = 7;
 const int M2INB = 8;
+const int maximum_speed = 255;
 
 DualVNH5019MotorShield md(
     M1INA, // INA1 : "M1INA"
@@ -481,29 +482,29 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
 
   if (strncmp(requestContent, "Button1=", 8) == 0){
     //Action1(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _EndPoint, 255);
+    MoveTo(0, _EndPoint, maximum_speed);
   }
   else if (strncmp(requestContent, "Button2=", 8) == 0){
     //Action2(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(0, _StartPoint, 255);
+    MoveTo(0, _StartPoint, maximum_speed);
   }
   else if (strncmp(requestContent, "Button3=", 8) == 0){
     //Action3(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _EndPoint, 255);
+    MoveTo(1, _EndPoint, maximum_speed);
   }
   else if (strncmp(requestContent, "Button4=", 8) == 0){
     //Action4(strncmp(&requestContent[9], "true", 4) == 0);
-    MoveTo(1, _StartPoint, 255);
+    MoveTo(1, _StartPoint, maximum_speed);
   }
   else if (strncmp(requestContent, "Button5=", 8) == 0){
-    MoveTo(1, _StartPoint, 255);
+    MoveTo(1, _StartPoint, maximum_speed);
     delay(100);
-    MoveTo(0, _StartPoint, 255);
+    MoveTo(0, _StartPoint, maximum_speed);
   }
   else if (strncmp(requestContent, "Button6=", 8) == 0){
-    MoveTo(0, _EndPoint, 255);
+    MoveTo(0, _EndPoint, maximum_speed);
     delay(100);
-    MoveTo(1, _EndPoint, 255);
+    MoveTo(1, _EndPoint, maximum_speed);
   }
 
   // send HTML header
