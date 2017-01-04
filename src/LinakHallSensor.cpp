@@ -30,3 +30,12 @@ unsigned int get(int sensor_id)
     return getS2();
   }
 }
+
+double get_mean(int motor, int samples)
+{
+  double tmp = 0;
+  for (int j=0;j<samples;j++) {
+    tmp += get(motor);
+  }
+  return tmp/samples;
+}

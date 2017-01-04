@@ -13,7 +13,7 @@ class LinakHallSensor
     unsigned int getS1();
     unsigned int getS2();
     unsigned int get(int sensor_id);
-
+    double get_mean(int motor, int samples);
 
   private:
     unsigned char _S1;
