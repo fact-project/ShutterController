@@ -18,6 +18,7 @@ class LinakHallSensor
     tools::mean_std_t get_mean_std(int motor, int samples);
 
   private:
+    double limit_std_deviation_to_one(double std);
     unsigned char _S1;
     unsigned char _S2;
 };

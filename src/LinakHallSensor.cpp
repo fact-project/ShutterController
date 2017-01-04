@@ -55,5 +55,17 @@ tools::mean_std_t LinakHallSensor::get_mean_std(int motor, int samples){
   tmp.mean /= samples;
   tmp.std = sqrt(tmp.std / samples - tmp.mean * tmp.mean);
 
+  tmp.std = limit_std_deviation_to_one(std.tmp);
   return tmp;
+}
+
+double LinakHallSensor::limit_std_deviation_to_one(double std){
+  double tmp;
+  if (std < 1){
+    tmp = 1.;
+  }
+  else{
+    tmp = position.std;
+  }
+  return tmp
 }
