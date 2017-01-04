@@ -707,8 +707,6 @@ void MoveTo(int motor, double target_position){
       }
       break;
     }
-
-
     delay (10);
     position = lh.get_mean_std(motor, 10);
   }
