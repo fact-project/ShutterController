@@ -11,7 +11,7 @@ namespace tools
     struct mean_std_t {
       double mean;
       double std;
-    }
+    };
 };
 
 #endif // tools_h
