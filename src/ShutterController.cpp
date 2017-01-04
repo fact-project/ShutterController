@@ -83,47 +83,40 @@ void send_status(EthernetClient & client)
 }
 
 
-void send_status_human_readable(EthernetClient & client)
+void send_status_human_readable()
 {
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 100);
     tools::mean_std_t position = lh.get_mean_std(i, 100);
 
-    client.print("M");
-    client.print(i);
-    client.print(" I=");
-    client.print(current.mean);
-    client.print("+-");
-    client.print(current.std);
-    client.print(" pos=");
-    client.print(position.mean);
-    client.print("+-");
-    client.print(position.std);
-    client.print(" S:");
-    client.print(md.getMotorSpeed(i));
-    client.print(" ");
+    Serial.print("M");
+    Serial.print(i);
+    Serial.print(" I=");
+    Serial.print(current.mean);
+    Serial.print("+-");
+    Serial.print(current.std);
+    Serial.print(" pos=");
+    Serial.print(position.mean);
+    Serial.print("+-");
+    Serial.print(position.std);
+    Serial.print(" S:");
+    Serial.print(md.getMotorSpeed(i));
+    Serial.print(" ");
 
   }
-  client.println();
+  Serial.println();
 
 }
 
 
 char check_for_client_send_status_return_command()
 {
-  EthernetClient client = server.available();
   char command = 0;
-  if (client) {
-    int avail = client.available();
-    client.println(avail);
-    if (avail > 1){
-      command = client.read();
-    }
-    send_status_human_readable(client);
-    client.print("command: ");
-    client.println(command);
-
-    //client.stop();
+  if (Serial.available() > 0) {
+    command = Serial.read();
+    send_status_human_readable();
+    Serial.print("command: ");
+    Serial.println(command);
   }
   return command;
 }
