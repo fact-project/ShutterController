@@ -698,11 +698,9 @@ void MoveTo(int motor, double target_position){
 
   double distance = target_position - round(position.mean);
 
-  int    steps=0;
   // [IF] the distance is bigger than +2*(absolute position error) try to move out the motor
   if (distance > 2*err_current_position){
     if( _LidStatus[motor] != _CLOSED){
-      steps++;
       _LidStatus[motor] = _CLOSING;
 
       md.ramp_to_speed_blocking(motor, maximum_speed);
@@ -722,7 +720,6 @@ void MoveTo(int motor, double target_position){
   }
   // [ELSE} if the distance is smaller than -2*(absolute position error) try to move in the motor
   else{
-    steps++;
     _LidStatus[motor] = _OPENING;
 
     md.ramp_to_speed_blocking(motor, -maximum_speed);
@@ -730,11 +727,10 @@ void MoveTo(int motor, double target_position){
 
 
   // Start the main loop which checks the motors while they are mooving
-  double motor_current;
-  for (steps=1;abs(distance) != 0 ;steps++){
+  while(abs(distance) != 0){
     //Read Current
     _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
-    motor_current = _currentValue[motor];
+    double motor_current = _currentValue[motor];
 
     if (md.is_overcurrent(motor)){
       _LidStatus[motor] = _OVER_CURRENT;
@@ -772,13 +768,6 @@ void MoveTo(int motor, double target_position){
       _LidStatus[motor] = _CLOSED;
       break;
     }
-
-    // If too many cycles of the loop print a message and check the position and the current
-    if (steps %50 == 0){
-      if( _LidStatus[motor] != _CLOSING && _LidStatus[motor] != _OPENING)
-        _LidStatus[motor] = _MOVING;
-    }
-
     // minimum delay between a cycle and the other is 1 ms
     delay (10);
   }
