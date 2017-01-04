@@ -198,6 +198,7 @@ byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
 IPAddress _ip(10, 0, 100, 36);
 
 #include "DualVNH5019MotorShield.h"
+#include "LinakHallSensor.h"
 
 const int M1INA = 2;
 const int M2INA = 7;
@@ -213,6 +214,8 @@ DualVNH5019MotorShield md(
     A1 // CS2 : "M2CS"
     );
 
+LinakHallSensor lh(A2, A3);
+
 void setup()
 {
     Serial.begin(115200);
@@ -225,6 +228,7 @@ void setup()
   server.begin();
 
   md.init();
+  lh.init();
 
   pinMode(A2, INPUT);
   pinMode(A3, INPUT);
@@ -747,7 +751,8 @@ void MoveTo(int motor, double target_position, int mySpeed){
   int    steps=0;
 
   for (int i=0;i<SAMPLES;i++){
-    tmp=ReadSensor(motor);
+
+    tmp=lh.get(motor);
     tmpM += tmp;
     tmpS += tmp*tmp;
   }
@@ -980,7 +985,7 @@ void MoveTo(int motor, double target_position, int mySpeed){
   tmp=0; tmpM=0; tmpS=0;
 
   for (int i=0;i<SAMPLES;i++){
-    tmp=ReadSensor(motor);
+    tmp=lh.get(motor);
     tmpM += tmp;
     tmpS += tmp*tmp;
   }
@@ -1011,21 +1016,6 @@ int availableMemory() {
   return free_memory;
 }
 
-
-// ReadSensor(0);  - Read sensor 0
-// ReadSensor(1);  - Read sensor 1
-double ReadSensor(int motor){
-
-  switch (motor){
-    case 0:
-      _sensorValue[motor] =  analogRead(A2);//*_ADC2V - _Voffset; //*_Compensation;
-      return _sensorValue[motor]; // Actuator 1 position
-    case 1:
-      _sensorValue[motor] =  analogRead(A3);//*_ADC2V - _Voffset;//_Compensation;
-      //_sensorValue[motor] = 771.9; //edit: mknoetig, this is the hackin order to override the broen hall sensor reading
-      return _sensorValue[motor]; // Actuator 1 position
-   }
-}
 
 double ReadSensorM(int motor, int samples){
   switch (motor){
