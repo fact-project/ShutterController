@@ -263,3 +263,17 @@ void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)
     delay(1);
   }
 }
+
+bool DualVNH5019MotorShield::is_overcurrent(int motor)
+{
+  if (get_mean(motor, 10) > _OverCurrent)
+  {
+    setMotorSpeed(motor, 0);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+
+}

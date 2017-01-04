@@ -28,6 +28,9 @@ class DualVNH5019MotorShield
     unsigned int get_mean(int motor, int samples);
     tools::mean_std_t get_mean_std(int motor, int samples);
     void ramp_to_speed_blocking(int motor, int speed);
+    bool is_overcurrent(int motor);
+
+    const int _OverCurrent = 150; // in mA corresponds to about ~100kg
 
   private:
     unsigned char _INA1;
@@ -41,6 +44,8 @@ class DualVNH5019MotorShield
 
     int current_speed_M1 = 0;
     int current_speed_M2 = 0;
+
+
 };
 
 #endif

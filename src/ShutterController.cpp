@@ -690,14 +690,12 @@ void MoveTo(int motor, double target_position){
   // define variable containing the current actuator position
   // the distance to be done to rech the target position and the
   // motor current
-  double current_position;
   double err_current_position;
-  double motor_current;
+
 
   double distance;
 
   tools::mean_std_t position = lh.get_mean_std(motor, SAMPLES);
-  current_position = round(position.mean);
   if (((int)position.std) < 1){
     err_current_position =     1.;
   }
@@ -705,7 +703,7 @@ void MoveTo(int motor, double target_position){
     err_current_position = position.std;
   }
   // calculate the distance needed to reach the target position
-  distance = target_position - current_position;
+  distance = target_position - round(position.mean);
 
   int    steps=0;
   // [IF] the distance is bigger than +2*(absolute position error) try to move out the motor
@@ -739,14 +737,13 @@ void MoveTo(int motor, double target_position){
 
 
   // Start the main loop which checks the motors while they are mooving
+  double motor_current;
   for (steps=1;abs(distance) != 0 ;steps++){
     //Read Current
     _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
     motor_current = _currentValue[motor];
 
-    // If Overcurrent stop
-    if (motor_current > _OverCurrent){
-      md.setMotorSpeed(motor, 0);
+    if (md.is_overcurrent(motor)){
       _LidStatus[motor] = _OVER_CURRENT;
       return;
     }
@@ -754,7 +751,7 @@ void MoveTo(int motor, double target_position){
     // Read current position
     // it doesn't make sense to read it here more time as the actuars are moving
     _sensorValue[motor] = lh.get_mean(motor, 10);
-    current_position = _sensorValue[motor];
+    double current_position = _sensorValue[motor];
 
     distance = target_position - current_position;
 
