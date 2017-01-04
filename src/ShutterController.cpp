@@ -681,6 +681,16 @@ void MoveTo(int motor, double target_position){
   tools::mean_std_t position = lh.get_mean_std(motor, 10);
   while(abs(target_position - position.mean) > 2*position.std)
   {
+    if (target_position > position.mean)
+    {
+      md.ramp_to_speed_blocking(motor, maximum_speed);
+      _LidStatus[motor] = _CLOSING;
+    }
+    else // if target_position < round(position.mean)
+    {
+      md.ramp_to_speed_blocking(motor, -maximum_speed);
+      _LidStatus[motor] = _OPENING;
+    }
 
     if (md.is_overcurrent(motor)){
       _LidStatus[motor] = _OVER_CURRENT;
@@ -698,16 +708,6 @@ void MoveTo(int motor, double target_position){
       break;
     }
 
-    if (target_position > position.mean)
-    {
-      md.ramp_to_speed_blocking(motor, maximum_speed);
-      _LidStatus[motor] = _CLOSING;
-    }
-    else // if target_position < round(position.mean)
-    {
-      md.ramp_to_speed_blocking(motor, -maximum_speed);
-      _LidStatus[motor] = _OPENING;
-    }
 
     delay (10);
     position = lh.get_mean_std(motor, 10);
