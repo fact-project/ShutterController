@@ -145,8 +145,12 @@ void loop()
   md.ramp_to_speed_blocking(0, m0_speed);
   md.ramp_to_speed_blocking(1, m1_speed);
 
-  md.is_overcurrent(0);
-  md.is_overcurrent(1);
+  if( md.is_overcurrent(0) ){
+    Serial.println("m0 overcurrent");
+  }
+  if( md.is_overcurrent(1) ){
+    Serial.println("m1 overcurrent");
+  }
 }
 
 
