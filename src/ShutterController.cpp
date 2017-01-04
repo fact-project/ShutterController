@@ -90,7 +90,7 @@ void send_status_human_readable(EthernetClient & client)
     tools::mean_std_t position = lh.get_mean_std(i, 100);
 
     client.print("M");
-    client.print(i+1);
+    client.print(i);
     client.print(" I=");
     client.print(current.mean);
     client.print("+-");
