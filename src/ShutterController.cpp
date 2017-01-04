@@ -176,7 +176,7 @@ void sendProgMemAsBinary(EthernetClient & client, const char* realword, int real
 
 byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
 IPAddress _ip(10, 0, 100, 36);
-
+#include "tools.h"
 #include "DualVNH5019MotorShield.h"
 #include "LinakHallSensor.h"
 
