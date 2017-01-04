@@ -227,11 +227,11 @@ unsigned int DualVNH5019MotorShield::getCurrentMilliamps(int motor)
 
 unsigned int DualVNH5019MotorShield::get_mean(int motor, int samples)
 {
-  unsigned int tmp = 0;
+  double tmp = 0;
   for (int j=0;j<samples;j++) {
     tmp += getCurrentMilliamps(motor);
   }
-  return tmp/samples;
+  return (unsigned int)(tmp/samples);
 }
 
 tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, int samples){
@@ -266,6 +266,7 @@ void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)
 
 bool DualVNH5019MotorShield::is_overcurrent(int motor)
 {
+
   if (get_mean(motor, 10) > _OverCurrent)
   {
     setMotorSpeed(motor, 0);
