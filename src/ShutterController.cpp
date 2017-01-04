@@ -17,13 +17,6 @@
 
 #include "ShutterController.h"
 
-// Each value is the real current value in the motors;
-// Define Current Limits in [A] - Offset is 0.5A for no load on the motors
-// pushing coefficient ~100 Kg/A
-const double _ZeroCurrent         PROGMEM = 0.25; // [A]
-const double _CurrentPushingLimit PROGMEM = 0.75; // 0.7-0.5 = 0.2 -> 20  +/- 5 kg
-const double _OverCurrent         PROGMEM = 1.50; // 1.5-0.5 = 1   -> 100 +/- 5 kg
-
 const int _StartPoint      =     0;
 const int _StartPointLimit =    70;
 const int _EndPoint        =  1024;
@@ -688,9 +681,21 @@ void MoveTo(int motor, double target_position){
   tools::mean_std_t position = lh.get_mean_std(motor, 10);
   while(abs(target_position - position.mean) > 2*position.std)
   {
+
     if (md.is_overcurrent(motor)){
       _LidStatus[motor] = _OVER_CURRENT;
-      return;
+      break;
+    }
+
+    if (md.is_zerocurrent(motor)){
+      if (_LidStatus[motor] == _CLOSING){
+        _LidStatus[motor] == _CLOSED;
+      }
+      else
+      {
+        _LidStatus[motor] == _OPEN;
+      }
+      break;
     }
 
     if (target_position > position.mean)
@@ -704,37 +709,10 @@ void MoveTo(int motor, double target_position){
       _LidStatus[motor] = _OPENING;
     }
 
-    position = lh.get_mean_std(motor, 10);
-
-    // [IF] the current drops below ~0.07 A might means that the end swirch
-    //      stopped the motor check also the position to determine if this is true.
-    if (md.get_mean(motor, 10) / 1000. < _ZeroCurrent){
-      // Closing
-      if ( position.mean > _EndPointLimit && target_position > _EndPointLimit ){
-        _LidStatus[motor] = _CLOSED;
-        break; //Exit from the for loop
-      }
-      // Opening
-      else if (position.mean < _StartPointLimit && target_position < _StartPointLimit ){
-        _LidStatus[motor] = _OPEN;
-        break; //Exit from the for loop
-      }
-      // Error
-      else  {
-        _LidStatus[motor]  = _POWER_PROBLEM;
-        break; //Exit from the for loop
-      }
-    }
-
-   if (_LidStatus[motor] == _CLOSING && md.get_mean(motor, 10) / 1000. > _CurrentPushingLimit && current_position > _EndPointLimit){
-      _LidStatus[motor] = _CLOSED;
-      break;
-    }
-    // minimum delay between a cycle and the other is 1 ms
     delay (10);
+    position = lh.get_mean_std(motor, 10);
   }
 
   md.setMotorSpeed(motor, 0);
-  _LidStatus[motor] = _STEADY;
   return;
 }
