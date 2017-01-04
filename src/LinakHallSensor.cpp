@@ -45,7 +45,7 @@ tools::mean_std_t LinakHallSensor::get_mean_std(int motor, int samples){
   tmp.mean = 0.;
   tmp.std = 0.;
 
-  unsigned int foo;
+  double foo;
   for (int i=0; i<samples; i++)
   {
     foo = get(motor);
