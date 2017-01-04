@@ -22,6 +22,8 @@ class DualVNH5019MotorShield
     void setBrakes(int m1Brake, int m2Brake); // Brake both M1 and M2.
     unsigned int getM1CurrentMilliamps(); // Get current reading for M1.
     unsigned int getM2CurrentMilliamps(); // Get current reading for M2.
+    unsigned int getCurrentMilliamps(int motor);
+    unsigned int get_mean(int motor, int samples);
 
   private:
     unsigned char _INA1;

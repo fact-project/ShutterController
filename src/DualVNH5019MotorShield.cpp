@@ -207,3 +207,21 @@ unsigned int DualVNH5019MotorShield::getM2CurrentMilliamps()
   // 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
   return analogRead(_CS2) * 34;
 }
+
+unsigned int DualVNH5019MotorShield::getCurrentMilliamps(int motor)
+{
+  if (motor == 0) {
+    return getM1CurrentMilliamps();
+  } else {
+    return getM2CurrentMilliamps();
+  }
+}
+
+unsigned int DualVNH5019MotorShield::get_mean(int motor, int samples)
+{
+  unsigned int tmp = 0;
+  for (int j=0;j<samples;j++) {
+    tmp += getCurrentMilliamps(motor);
+  }
+  return tmp/samples;
+}
