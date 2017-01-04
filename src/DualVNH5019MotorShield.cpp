@@ -277,3 +277,19 @@ bool DualVNH5019MotorShield::is_overcurrent(int motor)
   }
 
 }
+
+
+bool DualVNH5019MotorShield::is_zerocurrent(int motor)
+{
+  if (get_mean(motor, 10) < _ZeroCurrent)
+  {
+    setMotorSpeed(motor, 0);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+
+}
+
