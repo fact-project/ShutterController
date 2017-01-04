@@ -62,14 +62,6 @@ const int _pinDB[2]   = {3,   8};
 //unsigned char _ENDIAG[2]   = {A4, A5};
 
 
-
-
-
-// Define conversion coefficients
-double _ADC2V  = 5. / 1024. ; // ADC channel to Volt
-double _V2A    = 0.140;       // 140 mV/A conversion factor for the
-
-
 // Define sensor value and lid status variables
 double  _sensorValue[2]    = {0,0};
 double  _currentValue[2]   = {0,0};
@@ -206,10 +198,10 @@ const int M2INB = 8;
 DualVNH5019MotorShield md(
     M1INA, // INA1 : "M1INA"
     M1INB, // INB1 : "M1INB"
-    A0, // CS1: "M1CS"
+    A4, // CS1: "M1CS"
     M2INA, // INA2 : "M2INA" - original 7
     M2INB, // INB2 : "M2INB" - original 8
-    A1 // CS2 : "M2CS"
+    A5 // CS2 : "M2CS"
     );
 
 LinakHallSensor lh(A2, A3);
@@ -495,7 +487,8 @@ void sendPage(EthernetClient & client, int nUriIndex, BUFFER & requestContent)
   // Read Sensor values for every page reload
   _sensorValue[0] = lh.get_mean(0, 100);
   _sensorValue[1] = lh.get_mean(1, 100);
-  ReadCurrentM(-1,100);
+  _currentValue[0] = md.get_mean(0, 100) / 1000.;
+  _currentValue[1] = md.get_mean(1, 100) / 1000.;
 
   if (strncmp(requestContent, "Button1=", 8) == 0){
     //Action1(strncmp(&requestContent[9], "true", 4) == 0);
@@ -848,7 +841,8 @@ void MoveTo(int motor, double target_position, int mySpeed){
   tmpS=0;
   for (steps=1;abs(travel) != 0 ;steps++){
     //Read Current
-    motor_current = ReadCurrentM(motor,10);
+    _currentValue[motor] = md.get_mean(motor, 10) / 1000.;
+    motor_current = _currentValue[motor];
 
     // If Overcurrent stop
     if (motor_current > _OverCurrent){
@@ -1011,33 +1005,4 @@ int availableMemory() {
     free_memory = ((int)&free_memory) - ((int) &__brkval);
 
   return free_memory;
-}
-
-double ReadCurrentM(int motor,  int samples){
-  switch (motor){
-    case -1: // Read all of them
-      _currentValue[0] = 0;
-      _currentValue[1] = 0;
-      for (int j=0;j<samples;j++){
-        _currentValue[0] +=  analogRead(A4)*_ADC2V/(_V2A*10.);
-        _currentValue[1] +=  analogRead(A5)*_ADC2V/(_V2A*10.);
-      }
-      _currentValue[0]/=samples;
-      _currentValue[1]/=samples;
-      return -1;
-    case 0:
-      _currentValue[motor] = 0;
-      for (int j=0;j<samples;j++)
-        _currentValue[motor] +=  analogRead(A4)*_ADC2V/(_V2A*10.);
-      _currentValue[motor]/=samples;
-      return _currentValue[motor];
-    case 1:
-      _currentValue[motor] = 0;
-      for (int j=0;j<samples;j++)
-        _currentValue[motor] +=  analogRead(A5)*_ADC2V/(_V2A*10.);
-      _currentValue[motor]/=samples;
-      return _currentValue[motor];
-
-  }
-
 }
