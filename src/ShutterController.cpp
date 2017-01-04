@@ -86,8 +86,8 @@ void send_status(EthernetClient & client)
 void send_status_human_readable()
 {
   for (int i=0; i<2; i++){
-    tools::mean_std_t current = md.get_mean_std(i, 100);
-    tools::mean_std_t position = lh.get_mean_std(i, 100);
+    tools::mean_std_t current = md.get_mean_std(i, 300);
+    tools::mean_std_t position = lh.get_mean_std(i, 300);
 
     Serial.print("M");
     Serial.print(i);
@@ -121,23 +121,30 @@ char check_for_client_send_status_return_command()
   return command;
 }
 
+int m0_speed = 0;
+int m1_speed = 0;
+
+
 void loop()
 {
   char cmd = check_for_client_send_status_return_command();
   switch (cmd){
     case 0: break;
-    case 'a': md.ramp_to_speed_blocking(0, -20); break;
-    case 's': md.ramp_to_speed_blocking(0, -10); break;
-    case 'd': md.ramp_to_speed_blocking(0, 0); break;
-    case 'f': md.ramp_to_speed_blocking(0, 10); break;
-    case 'g': md.ramp_to_speed_blocking(0, 20); break;
+    case 'a': m0_speed = -255; break;
+    case 's': m0_speed -= 32;  break;
+    case 'd': m0_speed = 0;    break;
+    case 'f': m0_speed += 32;  break;
+    case 'g': m0_speed = 255;  break;
 
-    case 'q': md.ramp_to_speed_blocking(1, -20); break;
-    case 'w': md.ramp_to_speed_blocking(1, -10); break;
-    case 'e': md.ramp_to_speed_blocking(1, 0); break;
-    case 'r': md.ramp_to_speed_blocking(1, 10); break;
-    case 't': md.ramp_to_speed_blocking(1, 20); break;
+    case 'q': m1_speed = -255; break;
+    case 'w': m1_speed -= 32;  break;
+    case 'e': m1_speed = 0;    break;
+    case 'r': m1_speed += 32;  break;
+    case 't': m1_speed = 255;  break;
   }
+  md.ramp_to_speed_blocking(0, m0_speed);
+  md.ramp_to_speed_blocking(1, m1_speed);
+
   md.is_overcurrent(0);
   md.is_overcurrent(1);
 }
