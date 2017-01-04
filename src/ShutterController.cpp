@@ -55,12 +55,6 @@ const char* _StatusLabel[]  = {"Unknown",
                                       "Motor Fault",
                                       "Power Problem",
                                       "Overcurrent"};
-// Define Arduino pins
-const int _pinPWM[2]  = {5,   6};
-const int _pinDA[2]   = {2,   7};
-const int _pinDB[2]   = {3,   8};
-//unsigned char _ENDIAG[2]   = {A4, A5};
-
 
 // Define sensor value and lid status variables
 double  _sensorValue[2]    = {0,0};
