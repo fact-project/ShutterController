@@ -113,22 +113,16 @@ void check_motor_current(){
 
 void send_status_human_readable()
 {
-  char formatted_string[128];
-  sprintf(formatted_string, "cmd=%c system_state=%d",
-    current_cmd,
-    system_state
-  );
-  formatted_string[127] = 0;
-  Serial.println(formatted_string);
-
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
     tools::mean_std_t position = lh.get_mean_std(i, 300);
-    sprintf(formatted_string, "M%1d: I=%5ld+-%5ld pos=%5ld+-%5ld S=%3d",
+    sprintf(formatted_string, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d",
       i, // motor id
       (long)current.mean, (long)current.std,
       (long)position.mean, (long)position.std,
-      md.getMotorSpeed(i)
+      md.getMotorSpeed(i),
+      current_cmd,
+      system_state
       );
     formatted_string[127] = 0;
     Serial.println(formatted_string);
