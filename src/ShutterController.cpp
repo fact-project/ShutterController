@@ -1,21 +1,27 @@
-enum states_t {
-  _UNKNOWN        =  0,
-  _CLOSED         =  1,
-  _OPEN           =  2,
-  _STEADY         =  3,
-  _MOVING         =  4,
-  _CLOSING        =  5,
-  _OPENING        =  6,
-  _JAMMED         =  7,
-  _MOTOR_FAULT    =  8,
-  _POWER_PROBLEM  =  9,
-  _OVER_CURRENT   = 10
-};
+typedef enum {
+  L_OPEN,
+  L_OPENING,
+  L_CLOSED,
+  L_CLOSING,
+  L_UNKNOWN
+} lid_states_t;
+
+typedef enum {
+  S_BOTH_CLOSED,
+  S_UPPER_OPENING,
+  S_HALF_OPEN,
+  S_LOWER_OPENING,
+  S_BOTH_OPEN,
+  S_LOWER_CLOSING,
+  S_UPPER_CLOSING,
+  S_UNKNOWN
+} system_state_t;
+
+system_state_t system_state = S_UNKNOWN;
+lid_states_t lid_states[2] = {L_UNKNOWN, L_UNKNOWN};
 
 const int _StartPoint      =     0;
 const int _EndPoint        =  1024;
-
-states_t _LidStatus[2]      = {_UNKNOWN, _UNKNOWN};
 
 void MoveTo(int motor, double target_position);
 
@@ -142,27 +148,17 @@ void MoveTo(int motor, double target_position){
     if (target_position > position.mean)
     {
       md.ramp_to_speed_blocking(motor, maximum_speed);
-      _LidStatus[motor] = _CLOSING;
     }
     else // if target_position < round(position.mean)
     {
       md.ramp_to_speed_blocking(motor, -maximum_speed);
-      _LidStatus[motor] = _OPENING;
     }
 
     if (md.is_overcurrent(motor)){
-      _LidStatus[motor] = _OVER_CURRENT;
       break;
     }
 
     if (md.is_zerocurrent(motor)){
-      if (_LidStatus[motor] == _CLOSING){
-        _LidStatus[motor] == _CLOSED;
-      }
-      else
-      {
-        _LidStatus[motor] == _OPEN;
-      }
       break;
     }
     delay (10);
