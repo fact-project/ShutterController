@@ -113,6 +113,7 @@ void check_motor_current(){
 
 void send_status_human_readable()
 {
+  char formatted_string[128];
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
     tools::mean_std_t position = lh.get_mean_std(i, 300);
