@@ -152,6 +152,7 @@ void loop()
   } else if (current_cmd == 'c'){
     close_both_sides();
   }
+  send_status_human_readable();
   check_motor_current();
   send_status_human_readable();
   fetch_new_command();
