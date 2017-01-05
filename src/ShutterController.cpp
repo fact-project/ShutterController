@@ -1,8 +1,3 @@
-#include <SPI.h>
-#include <Ethernet.h>
-
-#include "ShutterController.h"
-
 enum states_t {
   _UNKNOWN        =  0,
   _CLOSED         =  1,
@@ -22,14 +17,8 @@ const int _EndPoint        =  1024;
 
 states_t _LidStatus[2]      = {_UNKNOWN, _UNKNOWN};
 
-
-
 void MoveTo(int motor, double target_position);
 
-EthernetServer server(80);
-
-byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
-IPAddress _ip(10, 0, 100, 36);
 #include "tools.h"
 #include "DualVNH5019MotorShield.h"
 #include "LinakHallSensor.h"
@@ -53,33 +42,25 @@ LinakHallSensor lh(A2, A3);
 
 void setup()
 {
-    Serial.begin(9600);
-    Serial.println("Using hard-coded ip...");
-    Ethernet.begin(_mac, _ip);
-
-  Serial.print("My IP address is ");
-  Serial.println(Ethernet.localIP());
-
-  server.begin();
-
+  Serial.begin(9600);
   md.init();
   lh.init();
 }
 
-void send_status(EthernetClient & client)
+void send_status()
 {
   tools::mean_std_t tmp;
   tmp = md.get_mean_std(0, 10);
-  client.write((char*)&tmp, sizeof(tools::mean_std_t));
+  Serial.write((char*)&tmp, sizeof(tools::mean_std_t));
 
   tmp = md.get_mean_std(1, 10);
-  client.write((char*)&tmp, sizeof(tools::mean_std_t));
+  Serial.write((char*)&tmp, sizeof(tools::mean_std_t));
 
   tmp = lh.get_mean_std(0, 10);
-  client.write((char*)&tmp, sizeof(tools::mean_std_t));
+  Serial.write((char*)&tmp, sizeof(tools::mean_std_t));
 
   tmp = lh.get_mean_std(1, 10);
-  client.write((char*)&tmp, sizeof(tools::mean_std_t));
+  Serial.write((char*)&tmp, sizeof(tools::mean_std_t));
 }
 
 
