@@ -31,8 +31,8 @@ class DualVNH5019MotorShield
     bool is_overcurrent(int motor);
     bool is_zerocurrent(int motor);
 
-    const int _OverCurrent = 150; // in mA corresponds to about ~100kg
-    const int _ZeroCurrent = 25; // in mA
+    const unsigned int _OverCurrent = 150; // in mA corresponds to about ~100kg
+    const unsigned int _ZeroCurrent = 25; // in mA
 
 
   private:
