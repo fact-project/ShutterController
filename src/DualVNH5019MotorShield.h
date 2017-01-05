@@ -31,8 +31,11 @@ class DualVNH5019MotorShield
     bool is_overcurrent(int motor);
     bool is_zerocurrent(int motor);
 
-    const unsigned int _OverCurrent = 150; // in mA corresponds to about ~100kg
-    const unsigned int _ZeroCurrent = 25; // in mA
+    // Each value is the real current value in the motors;
+    // Define Current Limits in [A] - Offset is 500mA for no load on the motors
+    // pushing coefficient ~100 g/mA
+    const unsigned int _OverCurrent = 1500; // in mA corresponds to about ~100kg
+    const unsigned int _ZeroCurrent = 250; // in mA
 
 
   private:
