@@ -30,12 +30,12 @@ const int M2INB = 8;
 const int maximum_speed = 255;
 
 DualVNH5019MotorShield md(
-    M1INA, // INA1 : "M1INA"
-    M1INB, // INB1 : "M1INB"
-    A4, // CS1: "M1CS"
-    M2INA, // INA2 : "M2INA" - original 7
-    M2INB, // INB2 : "M2INB" - original 8
-    A5 // CS2 : "M2CS"
+    M1INA,
+    M1INB,
+    A4,
+    M2INA,
+    M2INB,
+    A5
     );
 
 LinakHallSensor lh(A2, A3);
