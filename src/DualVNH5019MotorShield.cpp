@@ -205,15 +205,29 @@ void DualVNH5019MotorShield::setBrakes(int m1Brake, int m2Brake)
 // Return motor 1 current value in milliamps.
 unsigned int DualVNH5019MotorShield::getM1CurrentMilliamps()
 {
+  // a factor 10 preamp has been placed, so this:
   // 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
-  return analogRead(_CS1) * 34;
+  // is now really this:
+  // 5V / 1024 ADC counts / 1440 mV per A = 3.4 mA per count
+
+  // In order to keep using integers, and avoid overflows, when multiplicating
+  // 1023 with 34, I convert to long .. divide by 10 .. and convert back to uint
+  // The error of this is below 5% as soon as we measure more than 10mA
+  return (unsigned int)(((long)analogRead(_CS1) * 34L) / 10);
 }
 
 // Return motor 2 current value in milliamps.
 unsigned int DualVNH5019MotorShield::getM2CurrentMilliamps()
 {
+  // a factor 10 preamp has been placed, so this:
   // 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
-  return analogRead(_CS2) * 34;
+  // is now really this:
+  // 5V / 1024 ADC counts / 1440 mV per A = 3.4 mA per count
+
+  // In order to keep using integers, and avoid overflows, when multiplicating
+  // 1023 with 34, I convert to long .. divide by 10 .. and convert back to uint
+  // The error of this is below 5% as soon as we measure more than 10mA
+  return (unsigned int)(((long)analogRead(_CS2) * 34L) / 10);
 }
 
 unsigned int DualVNH5019MotorShield::getCurrentMilliamps(int motor)
