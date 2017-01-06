@@ -140,7 +140,7 @@ void fetch_new_command()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   md.init();
   lh.init();
 }
