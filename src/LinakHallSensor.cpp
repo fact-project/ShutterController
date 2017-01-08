@@ -2,8 +2,8 @@
 
 LinakHallSensor::LinakHallSensor(unsigned char S1, unsigned char S2)
 {
-  _S1 = S1;
-  _S2 = S2;
+  _S1 = A2;
+  _S2 = A3;
 }
 
 void LinakHallSensor::init()

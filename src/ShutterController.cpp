@@ -17,7 +17,7 @@ system_state_t system_state = S_BOTH_OPEN;
 char current_cmd = 'x';
 
 DualVNH5019MotorShield md();
-LinakHallSensor lh(A2, A3);
+LinakHallSensor lh();
 
 void open_both_sides(){
   switch (system_state){
