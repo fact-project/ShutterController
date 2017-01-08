@@ -14,6 +14,7 @@ namespace tools
     struct mean_std_t {
       uint32_t mean;
       uint32_t var;
+      uint16_t samples;
     };
 
     uint32_t get_mean(const int pin, const uint16_t n);

@@ -27,6 +27,7 @@ tools::mean_std_t tools::get_mean_std(const int pin, const uint16_t n)
     mean_std_t tmp;
     tmp.mean = 0;
     tmp.var = 0;
+    tmp.samples = 0;
     if (n == 0) return tmp;
 
     uint64_t sum = 0;
@@ -41,5 +42,6 @@ tools::mean_std_t tools::get_mean_std(const int pin, const uint16_t n)
     uint64_t N = n;
     tmp.mean = (uint32_t) (sum / n);
     tmp.var = (N * sq_sum - sum * sum) / (N * N);
+    tmp.samples = n;
     return tmp;
 }
