@@ -56,19 +56,19 @@ void DualVNH5019MotorShield::init()
 
 void DualVNH5019MotorShield::setM1Speed(int speed)
 {
-  setSpeed_any(OCR0B, _INA1, _INB1, _PWM1, speed);
+  setSpeed_any(&OCR0B, _INA1, _INB1, _PWM1, speed);
   current_speed_M1 = speed;
 }
 
 void DualVNH5019MotorShield::setM2Speed(int speed)
 {
-  setSpeed_any(OCR0A, _INA2, _INB2, _PWM2, speed);
+  setSpeed_any(&OCR0A, _INA2, _INB2, _PWM2, speed);
   current_speed_M2 = speed;
 }
 
 // Set speed for motor, speed is a number betwenn -255 and 255
 void
-setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed)
+DualVNH5019MotorShield::setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed)
 {
   unsigned char reverse = 0;
   current_speed_M2 = speed;
