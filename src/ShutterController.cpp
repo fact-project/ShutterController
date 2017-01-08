@@ -128,7 +128,7 @@ void send_status_fixed_binary()
   msg.system_state = system_state;
 
   Serial.write((byte*)&msg, sizeof(msg));
-  uint16_t checksum =checksum_fletcher16((byte*)&msg, sizeof(msg));
+  uint16_t checksum = tools::checksum_fletcher16((byte*)&msg, sizeof(msg));
   Serial.write((byte*)&checksum, sizeof(checksum));
 }
 
