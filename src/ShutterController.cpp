@@ -100,31 +100,23 @@ void check_motor_current(){
 
 void send_status_fixed_binary()
 {
-  tools::mean_std_t inner_motor_current_mA = md.get_mean_std(0, 300);  // ~30ms
-  tools::mean_std_t outer_motor_current_mA = md.get_mean_std(1, 300);  // ~30ms
-
-  tools::mean_std_t inner_hall_sensor_position = lh.get_mean_std(0, 300);  // ~30ms
-  tools::mean_std_t outer_hall_sensor_position = lh.get_mean_std(1, 300);  // ~30ms
-
   struct message_t {
-      int16_t inner_motor_current_mA_mean;
-      int16_t inner_motor_current_mA_var;
-      int16_t inner_motor_current_mA_num;
+      tools::mean_std_t inner_motor_current;
+      tools::mean_std_t outer_motor_current;
 
-      int16_t outer_motor_current_mA_mean;
-      int16_t outer_motor_current_mA_var;
-      int16_t outer_motor_current_mA_num;
-
-      int16_t inner_hall_sensor_position_mean;
-      int16_t inner_hall_sensor_position_var;
-
-      int16_t outer_hall_sensor_position_mean;
-      int16_t outer_hall_sensor_position_var;
-
-
-      double mean;
-      double std;
+      tools::mean_std_t inner_motor_position;
+      tools::mean_std_t outer_motor_position;
   };
+
+  message_t msg;
+
+  msg.inner_motor_current = md.get_mean_std(0, 300);  // ~30ms
+  msg.outer_motor_current = md.get_mean_std(1, 300);  // ~30ms
+
+  msg.inner_motor_position = lh.get_mean_std(0, 300);  // ~30ms
+  msg.outer_motor_position = lh.get_mean_std(1, 300);  // ~30ms
+
+
 }
 
 void fetch_new_command()
