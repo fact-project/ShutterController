@@ -202,68 +202,43 @@ void DualVNH5019MotorShield::setBrakes(int m1Brake, int m2Brake)
   setM2Brake(m2Brake);
 }
 
-// Return motor 1 current value in milliamps.
-unsigned int DualVNH5019MotorShield::getM1CurrentMilliamps()
+// a factor 10 preamp has been placed, so this:
+// 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
+// is now really this:
+// 5V / 1024 ADC counts / 1440 mV per A = 3.4 mA per count
+
+// In order to keep using integers, and avoid overflows, when multiplicating
+// 1023 with 34, I convert to long .. divide by 10 .. and convert back to uint
+// The error of this is below 5% as soon as we measure more than 10mA
+
+/*
+ returns the mean
+ of the current consumed by the motor in units of 3.4mA per LSB.
+*/
+uint32_t DualVNH5019MotorShield::get_mean(int motor, int samples)
 {
-  // a factor 10 preamp has been placed, so this:
-  // 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
-  // is now really this:
-  // 5V / 1024 ADC counts / 1440 mV per A = 3.4 mA per count
-
-  // In order to keep using integers, and avoid overflows, when multiplicating
-  // 1023 with 34, I convert to long .. divide by 10 .. and convert back to uint
-  // The error of this is below 5% as soon as we measure more than 10mA
-  return (unsigned int)(((long)analogRead(_CS1) * 34L) / 10);
-}
-
-// Return motor 2 current value in milliamps.
-unsigned int DualVNH5019MotorShield::getM2CurrentMilliamps()
-{
-  // a factor 10 preamp has been placed, so this:
-  // 5V / 1024 ADC counts / 144 mV per A = 34 mA per count
-  // is now really this:
-  // 5V / 1024 ADC counts / 1440 mV per A = 3.4 mA per count
-
-  // In order to keep using integers, and avoid overflows, when multiplicating
-  // 1023 with 34, I convert to long .. divide by 10 .. and convert back to uint
-  // The error of this is below 5% as soon as we measure more than 10mA
-  return (unsigned int)(((long)analogRead(_CS2) * 34L) / 10);
-}
-
-unsigned int DualVNH5019MotorShield::getCurrentMilliamps(int motor)
-{
-  if (motor == 0) {
-    return getM1CurrentMilliamps();
-  } else {
-    return getM2CurrentMilliamps();
-  }
-}
-
-unsigned int DualVNH5019MotorShield::get_mean(int motor, int samples)
-{
-  double tmp = 0;
-  for (int j=0;j<samples;j++) {
-    tmp += getCurrentMilliamps(motor);
-  }
-  return (unsigned int)(tmp/samples);
-}
-
-tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, int samples){
-  tools::mean_std_t tmp;
-  tmp.mean = 0.;
-  tmp.std = 0.;
-
-  double foo;
-  for (int i=0; i<samples; i++)
+  if (motor == 0)
   {
-    foo = getCurrentMilliamps(motor);
-    tmp.mean += foo;
-    tmp.std += foo * foo;
+    return tools::get_mean(_CS1, samples);
   }
-  tmp.mean /= samples;
-  tmp.std = sqrt(tmp.std / samples - tmp.mean * tmp.mean);
+  else
+  {
+    return tools::get_mean(_CS2, samples);
+  }
+}
 
-  return tmp;
+/*
+ returns the mean and the variance (not std deviation!)
+ of the current consumed by the motor in units of 3.4mA per LSB.
+*/
+tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, uint16_t samples){
+  if (motor == 0){
+    return tools::get_mean_std(_CS1, samples)
+  }
+  else
+  {
+    return tools::get_mean_std(_CS2, samples)
+  }
 }
 
 void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)

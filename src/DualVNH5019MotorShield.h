@@ -22,10 +22,7 @@ class DualVNH5019MotorShield
     void setM1Brake(int brake); // Brake M1.
     void setM2Brake(int brake); // Brake M2.
     void setBrakes(int m1Brake, int m2Brake); // Brake both M1 and M2.
-    unsigned int getM1CurrentMilliamps(); // Get current reading for M1.
-    unsigned int getM2CurrentMilliamps(); // Get current reading for M2.
-    unsigned int getCurrentMilliamps(int motor);
-    unsigned int get_mean(int motor, int samples);
+    uint32_t get_mean(int motor, int samples);
     tools::mean_std_t get_mean_std(int motor, int samples);
     void ramp_to_speed_blocking(int motor, int speed);
     bool is_overcurrent(int motor);
@@ -34,8 +31,9 @@ class DualVNH5019MotorShield
     // Each value is the real current value in the motors;
     // Define Current Limits in [A] - Offset is 500mA for no load on the motors
     // pushing coefficient ~100 g/mA
-    const unsigned int _OverCurrent = 1500; // in mA corresponds to about ~100kg
-    const unsigned int _ZeroCurrent = 250; // in mA
+    // currents are measured in counts, 1 count corresponds to 3.4 mA
+    const unsigned int _OverCurrent = 441 ; // i.e. ~1500mA .. ~100kg load.
+    const unsigned int _ZeroCurrent = 73; // i.e. ~250mA
 
 
   private:
@@ -50,8 +48,6 @@ class DualVNH5019MotorShield
 
     int current_speed_M1 = 0;
     int current_speed_M2 = 0;
-
-
 };
 
 #endif
