@@ -12,60 +12,24 @@ void LinakHallSensor::init()
   pinMode(_S2, INPUT);
 }
 
-unsigned int LinakHallSensor::getS1()
+uint32_t LinakHallSensor::get_mean(int motor, int samples)
 {
-  return analogRead(_S1);
-}
-
-unsigned int LinakHallSensor::getS2()
-{
-  return analogRead(_S2);
-}
-
-unsigned int LinakHallSensor::get(int sensor_id)
-{
-  if (sensor_id==0){
-    return getS1();
-  } else {
-    return getS2();
+  if (motor == 0){
+    return tools::get_mean(_S1, samples);
   }
-}
-
-double LinakHallSensor::get_mean(int motor, int samples)
-{
-  double tmp = 0;
-  for (int j=0;j<samples;j++) {
-    tmp += get(motor);
-  }
-  return tmp/samples;
-}
-
-tools::mean_std_t LinakHallSensor::get_mean_std(int motor, int samples){
-  tools::mean_std_t tmp;
-  tmp.mean = 0.;
-  tmp.std = 0.;
-
-  double foo;
-  for (int i=0; i<samples; i++)
+  else
   {
-    foo = get(motor);
-    tmp.mean += foo;
-    tmp.std += foo * foo;
+    return tools::get_mean(_S2, samples);
   }
-  tmp.mean /= samples;
-  tmp.std = sqrt(tmp.std / samples - tmp.mean * tmp.mean);
-
-  tmp.std = limit_std_deviation_to_one(tmp.std);
-  return tmp;
 }
 
-double LinakHallSensor::limit_std_deviation_to_one(double std){
-  double tmp;
-  if (std < 1){
-    tmp = 1.;
+tools::mean_std_t LinakHallSensor::get_mean_std(int motor, int samples)
+{
+  if (motor == 0){
+    return tools::get_mean_std(_S1, samples);
   }
-  else{
-    tmp = std;
+  else
+  {
+    return tools::get_mean_std(_S2, samples);
   }
-  return tmp;
 }
