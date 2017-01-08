@@ -53,42 +53,22 @@ void DualVNH5019MotorShield::init()
 
   #endif
 }
-// Set speed for motor 1, speed is a number betwenn -255 and 255
+
 void DualVNH5019MotorShield::setM1Speed(int speed)
 {
-  unsigned char reverse = 0;
+  setSpeed_any(OCR0B, _INA1, _INB1, _PWM1, speed);
   current_speed_M1 = speed;
-  if (speed < 0)
-  {
-    speed = -speed;  // Make speed a positive quantity
-    reverse = 1;  // Preserve the direction
-  }
-  if (speed > 255)  // Max PWM dutycycle
-    speed = 255;
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0B = speed;
-  #else
-  analogWrite(_PWM1, speed);
-  #endif
-  if (speed == 0)
-  {
-    digitalWrite(_INA1,LOW);   // Make the motor coast no
-    digitalWrite(_INB1,LOW);   // matter which direction it is spinning.
-  }
-  else if (reverse)
-  {
-    digitalWrite(_INA1,LOW);
-    digitalWrite(_INB1,HIGH);
-  }
-  else
-  {
-    digitalWrite(_INA1,HIGH);
-    digitalWrite(_INB1,LOW);
-  }
 }
 
-// Set speed for motor 2, speed is a number betwenn -255 and 255
 void DualVNH5019MotorShield::setM2Speed(int speed)
+{
+  setSpeed_any(OCR0A, _INA2, _INB2, _PWM2, speed);
+  current_speed_M2 = speed;
+}
+
+// Set speed for motor, speed is a number betwenn -255 and 255
+void
+setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed)
 {
   unsigned char reverse = 0;
   current_speed_M2 = speed;
@@ -100,24 +80,24 @@ void DualVNH5019MotorShield::setM2Speed(int speed)
   if (speed > 255)  // Max
     speed = 255;
   #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0A = speed;
+  *ocr_reg = speed;
   #else
-  analogWrite(_PWM2, speed);
+  analogWrite(pwm, speed);
   #endif
   if (speed == 0)
   {
-    digitalWrite(_INA2,LOW);   // Make the motor coast no
-    digitalWrite(_INB2,LOW);   // matter which direction it is spinning.
+    digitalWrite(ina,LOW);   // Make the motor coast no
+    digitalWrite(inb,LOW);   // matter which direction it is spinning.
   }
   else if (reverse)
   {
-    digitalWrite(_INA2,LOW);
-    digitalWrite(_INB2,HIGH);
+    digitalWrite(ina,LOW);
+    digitalWrite(inb,HIGH);
   }
   else
   {
-    digitalWrite(_INA2,HIGH);
-    digitalWrite(_INB2,LOW);
+    digitalWrite(ina,HIGH);
+    digitalWrite(inb,LOW);
   }
 }
 
