@@ -9,8 +9,6 @@ class DualVNH5019MotorShield
   public:
     // CONSTRUCTORS
     DualVNH5019MotorShield(); // Default pin selection.
-    DualVNH5019MotorShield(unsigned char INA1, unsigned char INB1, unsigned char CS1,
-                           unsigned char INA2, unsigned char INB2, unsigned char CS2); // User-defined pin selection.
 
     // PUBLIC METHODS
     void init(); // Initialize TIMER 1, set the PWM to 20kHZ.

@@ -16,20 +16,7 @@ typedef enum {
 system_state_t system_state = S_BOTH_OPEN;
 char current_cmd = 'x';
 
-const int M1INA = 2;
-const int M1INB = 3;
-const int M2INA = 7;
-const int M2INB = 8;
-
-DualVNH5019MotorShield md(
-    M1INA,
-    M1INB,
-    A4,
-    M2INA,
-    M2INB,
-    A5
-    );
-
+DualVNH5019MotorShield md();
 LinakHallSensor lh(A2, A3);
 
 void open_both_sides(){
@@ -115,8 +102,8 @@ void send_status_human_readable(char foo)
 {
   char formatted_string[128];
   for (int i=0; i<2; i++){
-    tools::mean_std_t current = md.get_mean_std(i, 300);
-    tools::mean_std_t position = lh.get_mean_std(i, 300);
+    tools::mean_std_t current = md.get_mean_std(i, 300);  // takes ~30ms
+    tools::mean_std_t position = lh.get_mean_std(i, 300);  // takes ~30ms
     sprintf(formatted_string, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d  %c",
       i, // motor id
       (long)current.mean, (long)current.std,
@@ -129,6 +116,35 @@ void send_status_human_readable(char foo)
     formatted_string[127] = 0;
     Serial.println(formatted_string);
   }
+}
+
+void send_status_fixed_binary()
+{
+  tools::mean_std_t inner_motor_current_mA = md.get_mean_std(0, 300);  // ~30ms
+  tools::mean_std_t outer_motor_current_mA = md.get_mean_std(1, 300);  // ~30ms
+
+  tools::mean_std_t inner_hall_sensor_position = lh.get_mean_std(0, 300);  // ~30ms
+  tools::mean_std_t outer_hall_sensor_position = lh.get_mean_std(1, 300);  // ~30ms
+
+  struct message_t {
+      int16_t inner_motor_current_mA_mean;
+      int16_t inner_motor_current_mA_var;
+      int16_t inner_motor_current_mA_num;
+
+      int16_t outer_motor_current_mA_mean;
+      int16_t outer_motor_current_mA_var;
+      int16_t inner_motor_current_mA_num;
+
+      int16_t inner_hall_sensor_position_mean;
+      int16_t inner_hall_sensor_position_var;
+
+      int16_t outer_hall_sensor_position_mean;
+      int16_t outer_hall_sensor_position_var;
+
+
+      double mean;
+      double std;
+  };
 }
 
 void fetch_new_command()
