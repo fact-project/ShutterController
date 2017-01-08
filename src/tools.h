@@ -1,6 +1,9 @@
 #ifndef tools_h
 #define tools_h
 
+#include <stdint.h>
+#include "Arduino.h"
+
 extern int  __bss_end;
 extern void *__brkval;
 

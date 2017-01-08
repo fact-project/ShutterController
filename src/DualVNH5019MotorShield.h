@@ -21,7 +21,7 @@ class DualVNH5019MotorShield
     void setM2Brake(int brake); // Brake M2.
     void setBrakes(int m1Brake, int m2Brake); // Brake both M1 and M2.
     uint32_t get_mean(int motor, int samples);
-    tools::mean_std_t get_mean_std(int motor, int samples);
+    tools::mean_std_t get_mean_std(int motor, uint16_t samples);
     void ramp_to_speed_blocking(int motor, int speed);
     bool is_overcurrent(int motor);
     bool is_zerocurrent(int motor);

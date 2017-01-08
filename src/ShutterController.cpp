@@ -16,8 +16,8 @@ typedef enum {
 system_state_t system_state = S_BOTH_OPEN;
 char current_cmd = 'x';
 
-DualVNH5019MotorShield md();
-LinakHallSensor lh();
+DualVNH5019MotorShield md;
+LinakHallSensor lh;
 
 void open_both_sides(){
   switch (system_state){
@@ -98,26 +98,6 @@ void check_motor_current(){
 }
 
 
-void send_status_human_readable(char foo)
-{
-  char formatted_string[128];
-  for (int i=0; i<2; i++){
-    tools::mean_std_t current = md.get_mean_std(i, 300);  // takes ~30ms
-    tools::mean_std_t position = lh.get_mean_std(i, 300);  // takes ~30ms
-    sprintf(formatted_string, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d  %c",
-      i, // motor id
-      (long)current.mean, (long)current.std,
-      (long)position.mean, (long)position.std,
-      md.getMotorSpeed(i),
-      current_cmd,
-      system_state,
-      foo
-      );
-    formatted_string[127] = 0;
-    Serial.println(formatted_string);
-  }
-}
-
 void send_status_fixed_binary()
 {
   tools::mean_std_t inner_motor_current_mA = md.get_mean_std(0, 300);  // ~30ms
@@ -133,7 +113,7 @@ void send_status_fixed_binary()
 
       int16_t outer_motor_current_mA_mean;
       int16_t outer_motor_current_mA_var;
-      int16_t inner_motor_current_mA_num;
+      int16_t outer_motor_current_mA_num;
 
       int16_t inner_hall_sensor_position_mean;
       int16_t inner_hall_sensor_position_var;
@@ -169,8 +149,8 @@ void loop()
   } else if (current_cmd == 'c'){
     close_both_sides();
   }
-  send_status_human_readable('-');
+  send_status_fixed_binary();
   check_motor_current();
-  send_status_human_readable('|');
+  send_status_fixed_binary();
   fetch_new_command();
 }

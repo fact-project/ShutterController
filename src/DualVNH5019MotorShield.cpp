@@ -220,11 +220,11 @@ uint32_t DualVNH5019MotorShield::get_mean(int motor, int samples)
 */
 tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, uint16_t samples){
   if (motor == 0){
-    return tools::get_mean_std(_CS1, samples)
+    return tools::get_mean_std(_CS1, samples);
   }
   else
   {
-    return tools::get_mean_std(_CS2, samples)
+    return tools::get_mean_std(_CS2, samples);
   }
 }
 
