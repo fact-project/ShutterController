@@ -97,7 +97,6 @@ void check_motor_current(){
   }
 }
 
-
 void send_status_fixed_binary()
 {
   struct message_t {
@@ -106,6 +105,12 @@ void send_status_fixed_binary()
 
       tools::mean_std_t inner_motor_position;
       tools::mean_std_t outer_motor_position;
+
+      int16_t inner_motor_speed;
+      int16_t outer_motor_speed;
+
+      byte current_cmd;
+      byte system_state;
   };
 
   message_t msg;
@@ -116,7 +121,15 @@ void send_status_fixed_binary()
   msg.inner_motor_position = lh.get_mean_std(0, 300);  // ~30ms
   msg.outer_motor_position = lh.get_mean_std(1, 300);  // ~30ms
 
+  msg.inner_motor_speed = md.getMotorSpeed(0);
+  msg.outer_motor_speed = md.getMotorSpeed(1);
 
+  msg.current_cmd = current_cmd;
+  msg.system_state = system_state;
+
+  Serial.write((byte*)&msg, sizeof(msg));
+  uint16_t checksum =checksum_fletcher16((byte*)&msg, sizeof(msg));
+  Serial.write((byte*)&checksum, sizeof(checksum));
 }
 
 void fetch_new_command()

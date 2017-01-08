@@ -19,6 +19,8 @@ namespace tools
 
     uint32_t get_mean(const int pin, const uint16_t n);
     mean_std_t get_mean_std(const int pin, const uint16_t n);
+
+    uint16_t checksum_fletcher16( byte const *data, uint16_t bytes );
 };
 
 #endif // tools_h
