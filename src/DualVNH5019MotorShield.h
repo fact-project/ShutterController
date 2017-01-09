@@ -35,6 +35,8 @@ class DualVNH5019MotorShield
 
 
   private:
+    void setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed);
+
     unsigned char _INA1;
     unsigned char _INB1;
     static const unsigned char _PWM1 = 5;
