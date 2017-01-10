@@ -155,8 +155,10 @@ void loop()
   } else if (current_cmd == 'c'){
     close_both_sides();
   }
-  send_status_fixed_binary();
+  int foo = 64;
+  delay(250L*foo);
   check_motor_current();
   send_status_fixed_binary();
   fetch_new_command();
+  delay(750L*foo);
 }
