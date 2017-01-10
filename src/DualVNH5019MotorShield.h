@@ -31,7 +31,7 @@ class DualVNH5019MotorShield
     // pushing coefficient ~100 g/mA
     // currents are measured in counts, 1 count corresponds to 3.4 mA
     const unsigned int _OverCurrent = 441 ; // i.e. ~1500mA .. ~100kg load.
-    const unsigned int _ZeroCurrent = 73; // i.e. ~250mA
+    const unsigned int _ZeroCurrent = 80; // i.e. ~250mA
 
 
   private:
