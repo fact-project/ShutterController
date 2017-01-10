@@ -71,7 +71,6 @@ void
 DualVNH5019MotorShield::setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed)
 {
   unsigned char reverse = 0;
-  current_speed_M2 = speed;
   if (speed < 0)
   {
     speed = -speed;  // make speed a positive quantity
