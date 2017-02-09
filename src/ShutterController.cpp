@@ -158,6 +158,7 @@ void loop()
 
   send_status_fixed_binary();
   check_motor_current();
+  delay(64L * 500L);
   send_status_fixed_binary();
   fetch_new_command();
 }
