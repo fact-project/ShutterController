@@ -11,9 +11,10 @@ typedef enum {
   S_BOTH_OPEN,
   S_LOWER_CLOSING,
   S_UPPER_CLOSING,
+  S_UNKNOWN,
 } system_state_t;
 
-system_state_t system_state = S_BOTH_OPEN;
+system_state_t system_state = S_UNKNOWN;
 char current_cmd = 'x';
 
 DualVNH5019MotorShield md;
@@ -21,6 +22,7 @@ LinakHallSensor lh;
 
 void open_both_sides(){
   switch (system_state){
+    case S_UNKNOWN:
     case S_BOTH_CLOSED:
       md.ramp_to_speed_blocking(1, 255);
       system_state = S_UPPER_OPENING;
@@ -58,6 +60,7 @@ void close_both_sides(){
       system_state = S_LOWER_CLOSING;
       md.ramp_to_speed_blocking(0, -255);
       break;
+    case S_UNKNOWN:
     case S_BOTH_OPEN:
       system_state = S_LOWER_CLOSING;
       md.ramp_to_speed_blocking(0, -255);
