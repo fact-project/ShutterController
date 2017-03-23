@@ -30,8 +30,8 @@ class DualVNH5019MotorShield
     // Define Current Limits in [A] - Offset is 500mA for no load on the motors
     // pushing coefficient ~100 g/mA
     // currents are measured in counts, 1 count corresponds to 3.4 mA
-    const unsigned int _OverCurrent = 441 ; // i.e. ~1500mA .. ~100kg load.
-    const unsigned int _ZeroCurrent = 100; // i.e. ~250mA
+    const unsigned int _OverCurrent = 441;
+    const unsigned int _ZeroCurrent = 100;
 
 
   private:
