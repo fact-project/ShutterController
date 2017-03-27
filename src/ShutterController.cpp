@@ -24,8 +24,6 @@ uint16_t archive_pointer = 0;
 uint16_t motor_pointer[2];
 
 system_state_t system_state = S_UNKNOWN;
-char current_cmd = 'x';
-
 DualVNH5019MotorShield md;
 LinakHallSensor lh;
 
@@ -98,7 +96,7 @@ void drive_stop() {
     md.setMotorSpeed(1, 0);
 }
 
-void achnowledge_header()
+void achnowledge_header(char cmd)
 {
     Serial.print("Current state: ");
     switch (system_state){
@@ -111,88 +109,90 @@ void achnowledge_header()
         case S_UNKNOWN: Serial.println("Unknown"); break;
     }
     Serial.write("Received command:");
-    Serial.println(current_cmd);
+    Serial.println(cmd);
 }
 
-void acknowledge_no_operation()
+void acknowledge_no_operation(char cmd)
 {
     Serial.println("Ignoring command.");
-    achnowledge_header();
+    achnowledge_header(cmd);
 }
 
-void acknowledge_operation()
+void acknowledge_operation(char cmd)
 {
     Serial.println("Command Valid:");
-    achnowledge_header();
+    achnowledge_header(cmd);
 }
 
-void init_drive_close()
+void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
-    acknowledge_operation();
+    acknowledge_operation(cmd);
     drive_close();  // blocking for ~20sec
 }
 
-void init_drive_open()
+void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
-    acknowledge_operation();
+    acknowledge_operation(cmd);
     drive_open();  // blocking for ~20sec
 }
 
-void init_fail_open(){
+void init_fail_open(char cmd){
     drive_stop();
     system_state = S_FAIL_OPENING;
-    acknowledge_operation();
+    acknowledge_operation(cmd);
 }
 
-void init_fail_close(){
+void init_fail_close(char cmd){
     drive_stop();
     system_state = S_FAIL_CLOSING;
-    acknowledge_operation();
+    acknowledge_operation(cmd);
 }
 
-void state_machine()
+void state_machine(char c)
 {
-    // local copy for shorter lines
-    char c = current_cmd;
     switch (system_state) {
         case S_OPEN:
-            if (c == 'o') acknowledge_no_operation();
-            if (c == 'c') init_drive_close();
+            if (c == 'o') acknowledge_no_operation(c);
+            if (c == 'c') init_drive_close(c);
             break;
         case S_CLOSED:
-            if (c == 'o') init_drive_open();
-            if (c == 'c') acknowledge_no_operation();
+            if (c == 'o') init_drive_open(c);
+            if (c == 'c') acknowledge_no_operation(c);
             break;
         case S_DRIVE_OPENING:
-            if (c == 'o') acknowledge_no_operation();
-            if (c == 'c') init_fail_open();
+            if (c == 'o') acknowledge_no_operation(c);
+            if (c == 'c') init_fail_open(c);
             break;
         case S_DRIVE_CLOSING:
-            if (c == 'o') init_fail_close();
-            if (c == 'c') acknowledge_no_operation();
+            if (c == 'o') init_fail_close(c);
+            if (c == 'c') acknowledge_no_operation(c);
             break;
         case S_FAIL_OPENING:
-            if (c == 'o') acknowledge_no_operation();
-            if (c == 'c') init_drive_close();
+            if (c == 'o') acknowledge_no_operation(c);
+            if (c == 'c') init_drive_close(c);
             break;
         case S_FAIL_CLOSING:
-            if (c == 'o') init_drive_open();
-            if (c == 'c') acknowledge_no_operation();
+            if (c == 'o') init_drive_open(c);
+            if (c == 'c') acknowledge_no_operation(c);
             break;
         case S_UNKNOWN:
-            if (c == 'o') init_drive_open();
-            if (c == 'c') init_drive_close();
+            if (c == 'o') init_drive_open(c);
+            if (c == 'c') init_drive_close(c);
             break;
     }
 }
 
-void fetch_new_command()
+char fetch_new_command()
 {
-  if (Serial.available() > 0) {
-    current_cmd = Serial.read();
-  }
+    if (Serial.available() > 0) {
+        return Serial.read();
+    }
+    else
+    {
+        return ' ';
+    }
 }
 
 void setup()
@@ -204,7 +204,6 @@ void setup()
 
 void loop()
 {
-    fetch_new_command();
-    state_machine();
+    state_machine(fetch_new_command());
 }
 
