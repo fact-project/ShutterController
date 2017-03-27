@@ -39,9 +39,20 @@ bool move_fully_supervised(int motor, bool open) {
         archive[archive_pointer++] = motor_info;
         motor_pointer[motor] = archive_pointer;
 
-        if (md.is_overcurrent(motor)) return open ? false : true;
-        if (md.is_zerocurrent(motor)) return true;
-        if (millis() - start_time > DRIVE_TIME_LIMIT_MS) return false;
+        if (md.is_overcurrent(motor)) {
+            Serial.println("is_overcurrent");
+            return open ? false : true;
+        }
+        if (md.is_zerocurrent(motor)){
+            Serial.println("is_zerocurrent");
+            return true;
+        }
+        unsigned long duration = millis() - start_time;
+        if (duration > DRIVE_TIME_LIMIT_MS) {
+            return false;
+            Serial.print("timeout: ");
+            Serial.println(duration);
+        }
     }
 }
 
