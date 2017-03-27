@@ -3,16 +3,33 @@
 #include "LinakHallSensor.h"
 #include <stdio.h> // for function sprintf
 
+void report_motor_info();
+void achnowledge_header();
+bool close_lower();
+bool close_upper();
+bool open_lower();
+bool open_upper();
+bool move_fully_supervised(int motor, bool open);
+
 typedef enum {
-  S_BOTH_CLOSED,
-  S_UPPER_OPENING,
-  S_HALF_OPEN,
-  S_LOWER_OPENING,
-  S_BOTH_OPEN,
-  S_LOWER_CLOSING,
-  S_UPPER_CLOSING,
+  S_CLOSED,
+  S_DRIVE_CLOSING,
+  S_FAIL_CLOSING,
+  S_OPEN,
+  S_DRIVE_OPENING,
+  S_FAIL_OPENING,
   S_UNKNOWN,
 } system_state_t;
+
+struct motor_info_t {
+    uint16_t current;
+    uint16_t position;
+};
+
+#define ARCHIVE_LEN 300
+motor_info_t archive[ARCHIVE_LEN];
+uint16_t archive_pointer = 0;
+uint16_t motor_pointer[2];
 
 system_state_t system_state = S_UNKNOWN;
 char current_cmd = 'x';
@@ -20,120 +37,163 @@ char current_cmd = 'x';
 DualVNH5019MotorShield md;
 LinakHallSensor lh;
 
-void open_both_sides(){
-  switch (system_state){
-    case S_UNKNOWN:
-    case S_BOTH_CLOSED:
-      md.ramp_to_speed_blocking(1, 255);
-      system_state = S_UPPER_OPENING;
-      break;
-    case S_UPPER_OPENING: break;
-    case S_HALF_OPEN:
-      md.ramp_to_speed_blocking(0, 255);
-      system_state = S_LOWER_OPENING;
-      break;
-    case S_LOWER_OPENING: break;
-    case S_BOTH_OPEN: break;
-    case S_LOWER_CLOSING:
-      md.ramp_to_speed_blocking(0, 255);
-      system_state = S_LOWER_OPENING;
-      break;
-    case S_UPPER_CLOSING:
-      md.ramp_to_speed_blocking(1, 255);
-      system_state = S_UPPER_OPENING;
-      break;
-  }
+const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL;
+
+void drive_close() {
+    if (close_lower() == false); system_state = S_FAIL_CLOSING;
+    if (close_upper() == false); system_state = S_FAIL_CLOSING;
+    system_state = S_CLOSED;
+    report_motor_info();
 }
 
-void close_both_sides(){
-  switch (system_state){
-    case S_BOTH_CLOSED: break;
-    case S_UPPER_OPENING:
-      md.ramp_to_speed_blocking(1, -255);
-      system_state = S_UPPER_CLOSING;
-      break;
-    case S_HALF_OPEN:
-      system_state = S_UPPER_CLOSING;
-      md.ramp_to_speed_blocking(1, -255);
-      break;
-    case S_LOWER_OPENING:
-      system_state = S_LOWER_CLOSING;
-      md.ramp_to_speed_blocking(0, -255);
-      break;
-    case S_UNKNOWN:
-    case S_BOTH_OPEN:
-      system_state = S_LOWER_CLOSING;
-      md.ramp_to_speed_blocking(0, -255);
-      break;
-    case S_LOWER_CLOSING: break;
-    case S_UPPER_CLOSING: break;
-  }
+void drive_open() {
+    if (open_upper() == false); system_state = S_FAIL_OPENING;
+    if (open_lower() == false); system_state = S_FAIL_OPENING;
+    system_state = S_OPEN;
+    report_motor_info();
 }
 
-void check_motor_current(){
-  switch (system_state){
-    case S_BOTH_CLOSED:
-    case S_BOTH_OPEN:
-    case S_HALF_OPEN:
-      // nothing is moving, so we don't care
-      break;
-    case S_UPPER_CLOSING:
-      if (md.is_overcurrent(1) || md.is_zerocurrent(1)){
-        system_state = S_BOTH_CLOSED;
-      }
-      break;
-    case S_UPPER_OPENING:
-      if (md.is_overcurrent(1) || md.is_zerocurrent(1)){
-        system_state = S_HALF_OPEN;
-      }
-      break;
-    case S_LOWER_OPENING:
-      if (md.is_overcurrent(0) || md.is_zerocurrent(0)){
-        system_state = S_BOTH_OPEN;
-      }
-      break;
-    case S_LOWER_CLOSING:
-      if (md.is_overcurrent(0) || md.is_zerocurrent(0)){
-        system_state = S_HALF_OPEN;
-      }
-      break;
-  }
+bool close_lower() {
+    return move_fully_supervised(0, false);
 }
 
-void send_status_fixed_binary()
+bool close_upper() {
+    return move_fully_supervised(1, false);
+}
+
+bool open_lower() {
+    return move_fully_supervised(0, true);
+}
+
+bool open_upper() {
+    return move_fully_supervised(1, true);
+}
+
+bool move_fully_supervised(int motor, bool open) {
+    unsigned long start_time = millis();
+    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
+    while (true) {
+        motor_info_t motor_info;
+        motor_info.current = md.get_mean_std(motor, 300).mean;
+        motor_info.position = lh.get_mean_std(motor, 300).mean;
+        archive[archive_pointer++] = motor_info;
+        motor_pointer[motor] = archive_pointer;
+
+        if (md.is_overcurrent(motor)) return open ? false : true;
+        if (md.is_zerocurrent(motor)) return true;
+        if (millis() - start_time > DRIVE_TIME_LIMIT_MS) return false;
+    }
+}
+
+void report_motor_info() {
+    Serial.println("motor_pointers:");
+    Serial.print(0); Serial.println(motor_pointer[0]);
+    Serial.print(1); Serial.println(motor_pointer[1]);
+    Serial.println("current and positions");
+    for (uint16_t i=0; i<archive_pointer; i++) {
+        Serial.print(archive[i].current);
+        Serial.print(' ');
+        Serial.print(archive[i].position);
+        Serial.println();
+    }
+    archive_pointer = 0;
+    motor_pointer[0] = 0;
+    motor_pointer[1] = 0;
+}
+
+void drive_stop() {
+    md.setMotorSpeed(0, 0);
+    md.setMotorSpeed(1, 0);
+}
+
+void achnowledge_header()
 {
-  struct message_t {
-      tools::mean_std_t inner_motor_current;
-      tools::mean_std_t outer_motor_current;
+    Serial.print("Current state: ");
+    switch (system_state){
+        case S_OPEN: Serial.println("Open"); break;
+        case S_DRIVE_OPENING: Serial.println("Opening"); break;
+        case S_FAIL_OPENING: Serial.println("Fail during Opening"); break;
+        case S_CLOSED: Serial.println("Closed"); break;
+        case S_DRIVE_CLOSING: Serial.println("Closing"); break;
+        case S_FAIL_CLOSING: Serial.println("Fail during Closing"); break;
+        case S_UNKNOWN: Serial.println("Unknown"); break;
+    }
+    Serial.write("Received command:");
+    Serial.println(current_cmd);
+}
 
-      tools::mean_std_t inner_motor_position;
-      tools::mean_std_t outer_motor_position;
+void acknowledge_no_operation()
+{
+    Serial.println("Ignoring command.");
+    achnowledge_header();
+}
 
-      int16_t inner_motor_speed;
-      int16_t outer_motor_speed;
+void acknowledge_operation()
+{
+    Serial.println("Command Valid:");
+    achnowledge_header();
+}
 
-      byte current_cmd;
-      byte system_state;
-  };
+void init_drive_close()
+{
+    system_state = S_DRIVE_CLOSING;
+    acknowledge_operation();
+    drive_close();  // blocking for ~20sec
+}
 
-  message_t msg;
+void init_drive_open()
+{
+    system_state = S_DRIVE_OPENING;
+    acknowledge_operation();
+    drive_open();  // blocking for ~20sec
+}
 
-  msg.inner_motor_current = md.get_mean_std(0, 300);  // ~30ms
-  msg.outer_motor_current = md.get_mean_std(1, 300);  // ~30ms
+void init_fail_open(){
+    drive_stop();
+    system_state = S_FAIL_OPENING;
+    acknowledge_operation();
+}
 
-  msg.inner_motor_position = lh.get_mean_std(0, 300);  // ~30ms
-  msg.outer_motor_position = lh.get_mean_std(1, 300);  // ~30ms
+void init_fail_close(){
+    drive_stop();
+    system_state = S_FAIL_CLOSING;
+    acknowledge_operation();
+}
 
-  msg.inner_motor_speed = md.getMotorSpeed(0);
-  msg.outer_motor_speed = md.getMotorSpeed(1);
-
-  msg.current_cmd = current_cmd;
-  msg.system_state = system_state;
-
-  uint16_t checksum = tools::checksum_fletcher16((byte*)&msg, sizeof(msg));
-  Serial.write("start:");
-  Serial.write((byte*)&msg, sizeof(msg));
-  Serial.write((byte*)&checksum, sizeof(checksum));
+void state_machine()
+{
+    // local copy for shorter lines
+    char c = current_cmd;
+    switch (system_state) {
+        case S_OPEN:
+            if (c == 'o') acknowledge_no_operation();
+            if (c == 'c') init_drive_close();
+            break;
+        case S_CLOSED:
+            if (c == 'o') init_drive_open();
+            if (c == 'c') acknowledge_no_operation();
+            break;
+        case S_DRIVE_OPENING:
+            if (c == 'o') acknowledge_no_operation();
+            if (c == 'c') init_fail_open();
+            break;
+        case S_DRIVE_CLOSING:
+            if (c == 'o') init_fail_close();
+            if (c == 'c') acknowledge_no_operation();
+            break;
+        case S_FAIL_OPENING:
+            if (c == 'o') acknowledge_no_operation();
+            if (c == 'c') init_drive_close();
+            break;
+        case S_FAIL_CLOSING:
+            if (c == 'o') init_drive_open();
+            if (c == 'c') acknowledge_no_operation();
+            break;
+        case S_UNKNOWN:
+            if (c == 'o') init_drive_open();
+            if (c == 'c') init_drive_close();
+            break;
+    }
 }
 
 void fetch_new_command()
@@ -150,18 +210,9 @@ void setup()
   lh.init();
 }
 
-
 void loop()
 {
-  if (current_cmd == 'o'){
-    open_both_sides();
-  } else if (current_cmd == 'c'){
-    close_both_sides();
-  }
-
-  send_status_fixed_binary();
-  check_motor_current();
-  delay(64L * 500L);
-  send_status_fixed_binary();
-  fetch_new_command();
+    fetch_new_command();
+    state_machine();
 }
+
