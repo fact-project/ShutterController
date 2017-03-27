@@ -27,7 +27,7 @@ system_state_t system_state = S_UNKNOWN;
 DualVNH5019MotorShield md;
 LinakHallSensor lh;
 
-const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL;
+const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
@@ -49,27 +49,31 @@ bool move_fully_supervised(int motor, bool open) {
         }
         unsigned long duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
-            return false;
             Serial.print("timeout: ");
             Serial.println(duration);
+            return false;
         }
     }
 }
 
 bool close_lower() {
     return move_fully_supervised(0, false);
+    md.setMotorSpeed(0, 0);
 }
 
 bool close_upper() {
     return move_fully_supervised(1, false);
+    md.setMotorSpeed(1, 0);
 }
 
 bool open_lower() {
     return move_fully_supervised(0, true);
+    md.setMotorSpeed(0, 0);
 }
 
 bool open_upper() {
     return move_fully_supervised(1, true);
+    md.setMotorSpeed(1, 0);
 }
 
 void report_motor_info() {
