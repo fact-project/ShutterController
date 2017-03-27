@@ -93,15 +93,31 @@ void report_motor_info() {
 }
 
 void drive_close() {
-    if (close_lower() == false); system_state = S_FAIL_CLOSING;
-    if (close_upper() == false); system_state = S_FAIL_CLOSING;
+    if (close_lower() == false) {
+        system_state = S_FAIL_CLOSING;
+        report_motor_info();
+        return;
+    }
+    if (close_upper() == false) {
+        system_state = S_FAIL_CLOSING;
+        report_motor_info();
+        return;
+    }
     system_state = S_CLOSED;
     report_motor_info();
 }
 
 void drive_open() {
-    if (open_upper() == false); system_state = S_FAIL_OPENING;
-    if (open_lower() == false); system_state = S_FAIL_OPENING;
+    if (open_upper() == false){
+        system_state = S_FAIL_OPENING;
+        report_motor_info();
+        return;
+    }
+    if (open_lower() == false){
+        system_state = S_FAIL_OPENING;
+        report_motor_info();
+        return;
+    }
     system_state = S_OPEN;
     report_motor_info();
 }
