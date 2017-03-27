@@ -185,33 +185,23 @@ void state_machine(char c)
 {
     switch (system_state) {
         case S_OPEN:
-            if (c == 'o') acknowledge_no_operation(c);
+        case S_FAIL_OPENING:
+        case S_UNKNOWN:
             if (c == 'c') init_drive_close(c);
             break;
         case S_CLOSED:
+        case S_FAIL_CLOSING:
+        case S_UNKNOWN:
             if (c == 'o') init_drive_open(c);
-            if (c == 'c') acknowledge_no_operation(c);
             break;
         case S_DRIVE_OPENING:
-            if (c == 'o') acknowledge_no_operation(c);
             if (c == 'c') init_fail_open(c);
             break;
         case S_DRIVE_CLOSING:
             if (c == 'o') init_fail_close(c);
-            if (c == 'c') acknowledge_no_operation(c);
             break;
-        case S_FAIL_OPENING:
-            if (c == 'o') acknowledge_no_operation(c);
-            if (c == 'c') init_drive_close(c);
-            break;
-        case S_FAIL_CLOSING:
-            if (c == 'o') init_drive_open(c);
-            if (c == 'c') acknowledge_no_operation(c);
-            break;
-        case S_UNKNOWN:
-            if (c == 'o') init_drive_open(c);
-            if (c == 'c') init_drive_close(c);
-            break;
+        default:
+            acknowledge_no_operation(c);
     }
 }
 
