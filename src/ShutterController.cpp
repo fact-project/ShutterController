@@ -3,14 +3,6 @@
 #include "LinakHallSensor.h"
 #include <stdio.h> // for function sprintf
 
-void report_motor_info();
-void achnowledge_header();
-bool close_lower();
-bool close_upper();
-bool open_lower();
-bool open_upper();
-bool move_fully_supervised(int motor, bool open);
-
 typedef enum {
   S_CLOSED,
   S_DRIVE_CLOSING,
@@ -39,18 +31,20 @@ LinakHallSensor lh;
 
 const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL;
 
-void drive_close() {
-    if (close_lower() == false); system_state = S_FAIL_CLOSING;
-    if (close_upper() == false); system_state = S_FAIL_CLOSING;
-    system_state = S_CLOSED;
-    report_motor_info();
-}
+bool move_fully_supervised(int motor, bool open) {
+    unsigned long start_time = millis();
+    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
+    while (true) {
+        motor_info_t motor_info;
+        motor_info.current = md.get_mean_std(motor, 300).mean;
+        motor_info.position = lh.get_mean_std(motor, 300).mean;
+        archive[archive_pointer++] = motor_info;
+        motor_pointer[motor] = archive_pointer;
 
-void drive_open() {
-    if (open_upper() == false); system_state = S_FAIL_OPENING;
-    if (open_lower() == false); system_state = S_FAIL_OPENING;
-    system_state = S_OPEN;
-    report_motor_info();
+        if (md.is_overcurrent(motor)) return open ? false : true;
+        if (md.is_zerocurrent(motor)) return true;
+        if (millis() - start_time > DRIVE_TIME_LIMIT_MS) return false;
+    }
 }
 
 bool close_lower() {
@@ -69,22 +63,6 @@ bool open_upper() {
     return move_fully_supervised(1, true);
 }
 
-bool move_fully_supervised(int motor, bool open) {
-    unsigned long start_time = millis();
-    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
-    while (true) {
-        motor_info_t motor_info;
-        motor_info.current = md.get_mean_std(motor, 300).mean;
-        motor_info.position = lh.get_mean_std(motor, 300).mean;
-        archive[archive_pointer++] = motor_info;
-        motor_pointer[motor] = archive_pointer;
-
-        if (md.is_overcurrent(motor)) return open ? false : true;
-        if (md.is_zerocurrent(motor)) return true;
-        if (millis() - start_time > DRIVE_TIME_LIMIT_MS) return false;
-    }
-}
-
 void report_motor_info() {
     Serial.println("motor_pointers:");
     Serial.print(0); Serial.println(motor_pointer[0]);
@@ -99,6 +77,20 @@ void report_motor_info() {
     archive_pointer = 0;
     motor_pointer[0] = 0;
     motor_pointer[1] = 0;
+}
+
+void drive_close() {
+    if (close_lower() == false); system_state = S_FAIL_CLOSING;
+    if (close_upper() == false); system_state = S_FAIL_CLOSING;
+    system_state = S_CLOSED;
+    report_motor_info();
+}
+
+void drive_open() {
+    if (open_upper() == false); system_state = S_FAIL_OPENING;
+    if (open_lower() == false); system_state = S_FAIL_OPENING;
+    system_state = S_OPEN;
+    report_motor_info();
 }
 
 void drive_stop() {
