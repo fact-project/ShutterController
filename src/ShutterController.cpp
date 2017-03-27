@@ -169,36 +169,20 @@ void init_drive_open(char cmd)
     drive_open();  // blocking for ~20sec
 }
 
-void init_fail_open(char cmd){
-    drive_stop();
-    system_state = S_FAIL_OPENING;
-    acknowledge_operation(cmd);
-}
-
-void init_fail_close(char cmd){
-    drive_stop();
-    system_state = S_FAIL_CLOSING;
-    acknowledge_operation(cmd);
-}
-
 void state_machine(char c)
 {
     switch (system_state) {
         case S_OPEN:
         case S_FAIL_OPENING:
         case S_UNKNOWN:
+        case S_DRIVE_OPENING:
             if (c == 'c') init_drive_close(c);
             break;
         case S_CLOSED:
         case S_FAIL_CLOSING:
         case S_UNKNOWN:
-            if (c == 'o') init_drive_open(c);
-            break;
-        case S_DRIVE_OPENING:
-            if (c == 'c') init_fail_open(c);
-            break;
         case S_DRIVE_CLOSING:
-            if (c == 'o') init_fail_close(c);
+            if (c == 'o') init_drive_open(c);
             break;
         default:
             acknowledge_no_operation(c);
