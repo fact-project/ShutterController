@@ -32,7 +32,20 @@ int max_close_speed[2] = {-255, -255};
 
 const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
+void print_system_state(){
+    Serial.print("Current state: ");
+    switch (system_state){
+        case S_OPEN: Serial.println("Open"); break;
+        case S_DRIVE_OPENING: Serial.println("Opening"); break;
+        case S_FAIL_OPENING: Serial.println("Fail during Opening"); break;
+        case S_CLOSED: Serial.println("Closed"); break;
+        case S_DRIVE_CLOSING: Serial.println("Closing"); break;
+        case S_FAIL_CLOSING: Serial.println("Fail during Closing"); break;
+        case S_UNKNOWN: Serial.println("Unknown"); break;
+    }
+}
 void report_motor_info(int motor, unsigned long duration, char reason) {
+    print_system_state();
     Serial.print("info about motor: ");
     Serial.println(motor);
     Serial.print("duration: ");
@@ -122,16 +135,7 @@ void drive_stop() {
 
 void achnowledge_header(char cmd)
 {
-    Serial.print("Current state: ");
-    switch (system_state){
-        case S_OPEN: Serial.println("Open"); break;
-        case S_DRIVE_OPENING: Serial.println("Opening"); break;
-        case S_FAIL_OPENING: Serial.println("Fail during Opening"); break;
-        case S_CLOSED: Serial.println("Closed"); break;
-        case S_DRIVE_CLOSING: Serial.println("Closing"); break;
-        case S_FAIL_CLOSING: Serial.println("Fail during Closing"); break;
-        case S_UNKNOWN: Serial.println("Unknown"); break;
-    }
+    print_system_state();
     Serial.print("Received command:");
     Serial.println(cmd);
 }
