@@ -30,7 +30,7 @@ LinakHallSensor lh;
 int max_open_speed[2] = {255, 255};
 int max_close_speed[2] = {-255, -255};
 
-const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
+const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * 64UL;
 
 void print_system_state(){
     Serial.print("Current state: ");
