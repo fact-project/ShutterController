@@ -104,30 +104,6 @@ bool close_upper() { return move_fully_supervised(1, false); }
 bool open_lower() { return move_fully_supervised(0, true); }
 bool open_upper() { return move_fully_supervised(1, true); }
 
-void drive_close() {
-    if (close_lower() == false) {
-        system_state = S_FAIL_CLOSING;
-        return;
-    }
-    if (close_upper() == false) {
-        system_state = S_FAIL_CLOSING;
-        return;
-    }
-    system_state = S_CLOSED;
-}
-
-void drive_open() {
-    if (open_upper() == false){
-        system_state = S_FAIL_OPENING;
-        return;
-    }
-    if (open_lower() == false){
-        system_state = S_FAIL_OPENING;
-        return;
-    }
-    system_state = S_OPEN;
-}
-
 void acknowledge_no_operation(char cmd)
 {
     Serial.print("Ignoring command: ");
@@ -141,7 +117,15 @@ void init_drive_close(char cmd)
     Serial.print("Command Valid: ");
     Serial.println(cmd);
     print_system_state();
-    drive_close();
+    if (close_lower() == false) {
+        system_state = S_FAIL_CLOSING;
+        return;
+    }
+    if (close_upper() == false) {
+        system_state = S_FAIL_CLOSING;
+        return;
+    }
+    system_state = S_CLOSED;
 }
 
 void init_drive_open(char cmd)
@@ -150,7 +134,15 @@ void init_drive_open(char cmd)
     Serial.print("Command Valid: ");
     Serial.println(cmd);
     print_system_state();
-    drive_open();
+    if (open_upper() == false){
+        system_state = S_FAIL_OPENING;
+        return;
+    }
+    if (open_lower() == false){
+        system_state = S_FAIL_OPENING;
+        return;
+    }
+    system_state = S_OPEN;
 }
 
 void state_machine(char c)
