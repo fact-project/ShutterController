@@ -26,6 +26,9 @@ system_state_t system_state = S_UNKNOWN;
 DualVNH5019MotorShield md;
 LinakHallSensor lh;
 
+int max_open_speed[2] = {255, 255};
+int max_close_speed[2] = {-255, -255};
+
 const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
 void report_motor_info(int motor) {
@@ -44,7 +47,8 @@ void report_motor_info(int motor) {
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     bool success = false;
-    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
+    int speed = open ? max_open_speed[motor] : max_close_speed[motor];
+    md.ramp_to_speed_blocking(motor, speed);
     while (true) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, 300).mean;
