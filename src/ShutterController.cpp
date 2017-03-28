@@ -13,6 +13,16 @@ typedef enum {
   S_UNKNOWN,
 } system_state_t;
 
+typedef enum {
+    M_NO_REASON,
+    M_OVERCURRENT,
+    M_ZEROCURRENT,
+    M_TIMEOUT,
+    M_POSITION_REACHED,
+    M_USER_INTERUPT,
+} motor_stop_reason_t;
+
+
 struct motor_info_t {
     uint16_t current;
     uint16_t position;
@@ -42,14 +52,33 @@ void print_system_state(){
         case S_DRIVE_CLOSING: Serial.println("Closing"); break;
         case S_FAIL_CLOSE: Serial.println("Fail during Closing"); break;
         case S_UNKNOWN: Serial.println("Unknown"); break;
+        default:
+            Serial.println("Must never happen!");
     }
 }
-void report_motor_info(int motor, unsigned long duration, char reason) {
+
+void print_motor_stop_reason(motor_stop_reason_t r){
+    Serial.print("Motor Stop Reason: ");
+    switch (t){
+        case M_TIMEOUT: Serial.println("Timeout"); break;
+        case M_OVERCURRENT: Serial.println("Overcurrent"); break;
+        case M_ZEROCURRENT: Serial.println("Zerocurrent/Endswitch"); break;
+        case M_POSITION_REACHED: Serial.println("Position Reached"); break;
+        case M_NO_REASON: Serial.println("No Reason! bug!!!"); break;
+        case M_USER_INTERUPT: Serial.println("User Interupt"); break;
+        default:
+            Serial.println("Must never happen!");
+    }
+}
+
+
+void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
 
     Serial.print("info about motor: ");
     Serial.println(motor);
     Serial.print("duration: ");
     Serial.println(duration);
+    print_motor_stop_reason(reason)
     Serial.print("reason: ");
     Serial.println(reason);
     Serial.print("current and positions: #");
@@ -70,7 +99,7 @@ bool move_fully_supervised(int motor, bool open) {
     bool success = false;
     int speed = open ? max_open_speed[motor] : max_close_speed[motor];
     md.ramp_to_speed_blocking(motor, speed);
-    char reason = ' ';
+    motor_stop_reason_t reason = M_NO_REASON;
     while (true) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, num_samples).mean;
@@ -79,23 +108,24 @@ bool move_fully_supervised(int motor, bool open) {
             archive[archive_pointer++] = motor_info;
         }
         if (Serial.available() > 0) {
+            reason = M_USER_INTERUPT;
             success = false;
             break;
         }
 
         if (md.is_overcurrent(motor)) {
-            reason = 'O'; // O for Overcurrent
+            reason = M_OVERCURRENT
             success = open ? false : true;
             break;
         }
         if (md.is_zerocurrent(motor)){
-            reason = 'Z'; // Z for ZeroCurrent
+            reason = M_ZEROCURRENT;
             success = true;
             break;
         }
         duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
-            reason = 'T'; // T for Timeout
+            reason = M_TIMEOUT;
             success = false;
             break;
         }
