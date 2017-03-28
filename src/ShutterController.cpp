@@ -50,49 +50,49 @@ int max_close_speed[2] = {-255, -255};
 const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 
 void print_system_state(){
-    Serial.print("Current state: ");
+    server.print("Current state: ");
     switch (system_state){
-        case S_OPEN: Serial.println("Open"); break;
-        case S_DRIVE_OPENING: Serial.println("Opening"); break;
-        case S_FAIL_OPEN: Serial.println("Fail during Opening"); break;
-        case S_CLOSED: Serial.println("Closed"); break;
-        case S_DRIVE_CLOSING: Serial.println("Closing"); break;
-        case S_FAIL_CLOSE: Serial.println("Fail during Closing"); break;
-        case S_UNKNOWN: Serial.println("Unknown"); break;
+        case S_OPEN: server.println("Open"); break;
+        case S_DRIVE_OPENING: server.println("Opening"); break;
+        case S_FAIL_OPEN: server.println("Fail during Opening"); break;
+        case S_CLOSED: server.println("Closed"); break;
+        case S_DRIVE_CLOSING: server.println("Closing"); break;
+        case S_FAIL_CLOSE: server.println("Fail during Closing"); break;
+        case S_UNKNOWN: server.println("Unknown"); break;
         default:
-            Serial.println("Must never happen!");
+            server.println("Must never happen!");
     }
 }
 
 void print_motor_stop_reason(motor_stop_reason_t r){
-    Serial.print("Motor Stop Reason: ");
+    server.print("Motor Stop Reason: ");
     switch (r){
-        case M_TIMEOUT: Serial.println("Timeout"); break;
-        case M_OVERCURRENT: Serial.println("Overcurrent"); break;
-        case M_ZEROCURRENT: Serial.println("Zerocurrent/Endswitch"); break;
-        case M_POSITION_REACHED: Serial.println("Position Reached"); break;
-        case M_NO_REASON: Serial.println("No Reason! bug!!!"); break;
-        case M_USER_INTERUPT: Serial.println("User Interupt"); break;
+        case M_TIMEOUT: server.println("Timeout"); break;
+        case M_OVERCURRENT: server.println("Overcurrent"); break;
+        case M_ZEROCURRENT: server.println("Zerocurrent/Endswitch"); break;
+        case M_POSITION_REACHED: server.println("Position Reached"); break;
+        case M_NO_REASON: server.println("No Reason! bug!!!"); break;
+        case M_USER_INTERUPT: server.println("User Interupt"); break;
         default:
-            Serial.println("Must never happen!");
+            server.println("Must never happen!");
     }
 }
 
 
 void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
 
-    Serial.print("info about motor: ");
-    Serial.println(motor);
-    Serial.print("duration[ms]: ");
-    Serial.println(duration / TIMER0_MESS_UP_FACTOR);
+    server.print("info about motor: ");
+    server.println(motor);
+    server.print("duration[ms]: ");
+    server.println(duration / TIMER0_MESS_UP_FACTOR);
     print_motor_stop_reason(reason);
-    Serial.print("current and positions: #");
-    Serial.println(archive_pointer);
+    server.print("current and positions: #");
+    server.println(archive_pointer);
     for (uint16_t i=0; i<archive_pointer; i++) {
-        Serial.print(archive[i].current);
-        Serial.print(' ');
-        Serial.print(archive[i].position);
-        Serial.println();
+        server.print(archive[i].current);
+        server.print(' ');
+        server.print(archive[i].position);
+        server.println();
     }
     archive_pointer = 0;
 }
@@ -110,16 +110,6 @@ bool move_fully_supervised(int motor, bool open) {
         motor_info.position = lh.get_mean_std(motor, num_samples).mean;
         if (archive_pointer < ARCHIVE_LEN){
             archive[archive_pointer++] = motor_info;
-        }
-        if (Serial.available() > 0) {
-            char p = Serial.peek();
-            if ((open && p != 'o') ||
-                (!open && p != 'c'))
-            {
-                reason = M_USER_INTERUPT;
-                success = false;
-                break;
-            }
         }
 
         if (md.is_overcurrent(motor)) {
@@ -151,16 +141,16 @@ bool open_upper() { return move_fully_supervised(1, true); }
 
 void acknowledge_no_operation(char cmd)
 {
-    Serial.print("Ignoring command: ");
-    Serial.println(cmd);
+    server.print("Ignoring command: ");
+    server.println(cmd);
     print_system_state();
 }
 
 void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
-    Serial.print("Command Valid: ");
-    Serial.println(cmd);
+    server.print("Command Valid: ");
+    server.println(cmd);
     print_system_state();
     if (close_lower() == false) {
         system_state = S_FAIL_CLOSE;
@@ -177,8 +167,8 @@ void init_drive_close(char cmd)
 void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
-    Serial.print("Command Valid: ");
-    Serial.println(cmd);
+    server.print("Command Valid: ");
+    server.println(cmd);
     print_system_state();
     if (open_upper() == false){
         system_state = S_FAIL_OPEN;
@@ -217,23 +207,22 @@ void state_machine(char c)
 
 char fetch_new_command()
 {
-    if (Serial.available() > 0) {
-        return Serial.read();
+    EthernetClient client = server.available();
+    if (client) {
+        if (client.available() > 0){
+            return client.read();
+        }
     }
-    else
-    {
-        // I define 0 or '\0' is the special char, that means:
-        // no new command recieved, c.f. state_mache()
-        return 0;
-    }
+
+    // I define 0 or '\0' is the special char, that means:
+    // no new command recieved, c.f. state_mache()
+    return 0;
 }
 
 void setup()
 {
     Ethernet.begin(_mac, _ip);
     server.begin();
-
-    Serial.begin(115200);
     md.init();
     lh.init();
 }
