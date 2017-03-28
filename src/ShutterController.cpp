@@ -160,15 +160,13 @@ void state_machine(char c)
     if ((c == 'c') && (
         (system_state == S_OPEN) ||
         (system_state == S_FAIL_OPEN) ||
-        (system_state == S_UNKNOWN) ||
-        (system_state == S_DRIVE_OPENING)
+        (system_state == S_UNKNOWN)
         )) {
         init_drive_close(c);
     } else if ((c == 'o') && (
         (system_state == S_CLOSED) ||
         (system_state == S_FAIL_CLOSE) ||
-        (system_state == S_UNKNOWN) ||
-        (system_state == S_DRIVE_CLOSING)
+        (system_state == S_UNKNOWN)
         )) {
         init_drive_open(c);
     } else {
