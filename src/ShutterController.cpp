@@ -230,7 +230,7 @@ void state_machine()
     // so here we immediately return, c.f. fetch_new_command()
     if (c == 0) return;
     if (c == 's') {
-        print_system_state();
+        ack(c, true);
         return;
     }
     if ((c == 'c') && (
