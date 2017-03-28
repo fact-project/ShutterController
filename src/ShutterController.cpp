@@ -32,6 +32,7 @@ const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     md.ramp_to_speed_blocking(motor, open ? 255 : -255);
+    bool success = false;
     while (true) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, 300).mean;
@@ -43,39 +44,40 @@ bool move_fully_supervised(int motor, bool open) {
 
         if (md.is_overcurrent(motor)) {
             Serial.println("is_overcurrent");
-            return open ? false : true;
+            success = open ? false : true;
+            break;
         }
         if (md.is_zerocurrent(motor)){
             Serial.println("is_zerocurrent");
-            return true;
+            success = true;
+            break;
         }
         unsigned long duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
             Serial.print("timeout: ");
             Serial.println(duration);
-            return false;
+            success = false;
+            break;
         }
     }
+    md.setMotorSpeed(motor, 0);
+    return success;
 }
 
 bool close_lower() {
     return move_fully_supervised(0, false);
-    md.setMotorSpeed(0, 0);
 }
 
 bool close_upper() {
     return move_fully_supervised(1, false);
-    md.setMotorSpeed(1, 0);
 }
 
 bool open_lower() {
     return move_fully_supervised(0, true);
-    md.setMotorSpeed(0, 0);
 }
 
 bool open_upper() {
     return move_fully_supervised(1, true);
-    md.setMotorSpeed(1, 0);
 }
 
 void report_motor_info() {
