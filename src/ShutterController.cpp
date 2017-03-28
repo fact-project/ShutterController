@@ -28,9 +28,9 @@ struct motor_info_t {
     uint16_t position;
 };
 
-#define ARCHIVE_LEN 300
+#define ARCHIVE_LEN 100
 #define TIMER0_MESS_UP_FACTOR 32UL
-int num_samples = 500;
+int num_samples = 700;
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
 
