@@ -32,9 +32,13 @@ int max_close_speed[2] = {-255, -255};
 
 const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
-void report_motor_info(int motor) {
+void report_motor_info(int motor, unsigned long duration, char reason) {
     Serial.print("info about motor: ");
     Serial.println(motor);
+    Serial.print("duration: ");
+    Serial.println(duration);
+    Serial.print("reason: ");
+    Serial.println(reason);
     Serial.println("current and positions");
     for (uint16_t i=0; i<archive_pointer; i++) {
         Serial.print(archive[i].current);
@@ -47,9 +51,11 @@ void report_motor_info(int motor) {
 
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
+    unsigned long duration = 0;
     bool success = false;
     int speed = open ? max_open_speed[motor] : max_close_speed[motor];
     md.ramp_to_speed_blocking(motor, speed);
+    char reason = ' ';
     while (true) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, num_samples).mean;
@@ -59,25 +65,24 @@ bool move_fully_supervised(int motor, bool open) {
         }
 
         if (md.is_overcurrent(motor)) {
-            Serial.println("is_overcurrent");
+            reason = 'O'; // O for Overcurrent
             success = open ? false : true;
             break;
         }
         if (md.is_zerocurrent(motor)){
-            Serial.println("is_zerocurrent");
+            reason = 'Z'; // Z for ZeroCurrent
             success = true;
             break;
         }
-        unsigned long duration = millis() - start_time;
+        duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
-            Serial.print("timeout: ");
-            Serial.println(duration);
+            reason = 'T'; // T for Timeout
             success = false;
             break;
         }
     }
     md.setMotorSpeed(motor, 0);
-    report_motor_info(motor);
+    report_motor_info(motor, duration, reason);
     return success;
 }
 
