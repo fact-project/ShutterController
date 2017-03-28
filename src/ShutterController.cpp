@@ -72,17 +72,21 @@ void print_system_state(){
 }
 
 void print_motor_stop_reason(motor_stop_reason_t r){
-    server.print("Motor Stop Reason: ");
+    server.print(F("{\"motor_stop_name\":"));
     switch (r){
-        case M_TIMEOUT: server.println("Timeout"); break;
-        case M_OVERCURRENT: server.println("Overcurrent"); break;
-        case M_ZEROCURRENT: server.println("Zerocurrent/Endswitch"); break;
-        case M_POSITION_REACHED: server.println("Position Reached"); break;
-        case M_NO_REASON: server.println("No Reason! bug!!!"); break;
-        case M_USER_INTERUPT: server.println("User Interupt"); break;
+        case M_TIMEOUT: server.print(F("\"Timeout\"")); break;
+        case M_OVERCURRENT: server.print(F("\"Overcurrent\"")); break;
+        case M_ZEROCURRENT: server.print(F("\"Zerocurrent/Endswitch\"")); break;
+        case M_POSITION_REACHED: server.print(F("\"Position Reached\"")); break;
+        case M_NO_REASON: server.print(F("\"No Reason! bug!!!\"")); break;
+        case M_USER_INTERUPT: server.print(F("\"User Interupt\"")); break;
         default:
-            server.println("Must never happen!");
+            server.print(F("\"Must never happen!\""));
     }
+    server.print(',');
+    server.print(F("\"motor_stop_id\":"));
+    server.print(int(r));
+    server.println('}');
 }
 
 
