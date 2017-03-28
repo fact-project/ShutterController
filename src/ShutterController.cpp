@@ -106,9 +106,14 @@ bool move_fully_supervised(int motor, bool open) {
             archive[archive_pointer++] = motor_info;
         }
         if (Serial.available() > 0) {
-            reason = M_USER_INTERUPT;
-            success = false;
-            break;
+            char p = Serial.peek();
+            if ((open && p != 'o') ||
+                (!open && p != 'c'))
+            {
+                reason = M_USER_INTERUPT;
+                success = false;
+                break;
+            }
         }
 
         if (md.is_overcurrent(motor)) {
