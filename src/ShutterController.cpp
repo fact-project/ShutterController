@@ -100,7 +100,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
 
     JsonArray& current = root.createNestedArray("current");
     JsonArray& position = root.createNestedArray("position");
-    for (uint16_t i=0; i<max(20, archive_pointer); i++) {
+    for (uint16_t i=0; i<min(20, archive_pointer); i++) {
         current.add(archive[i].current);
         position.add(archive[i].position);
     }
