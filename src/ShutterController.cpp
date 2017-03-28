@@ -91,20 +91,24 @@ void print_motor_stop_reason(motor_stop_reason_t r){
 
 
 void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
-
-    server.print("info about motor: ");
-    server.println(motor);
-    server.print("duration[ms]: ");
-    server.println(duration / TIMER0_MESS_UP_FACTOR);
-    print_motor_stop_reason(reason);
-    server.print("current and positions: #");
-    server.println(archive_pointer);
-    for (uint16_t i=0; i<archive_pointer; i++) {
-        server.print(archive[i].current);
-        server.print(' ');
-        server.print(archive[i].position);
-        server.println();
+    server.print(F("{\"motor_id\":"));
+    server.print(motor); server.print(',');
+    server.print(F("\"duration[ms]\":"));
+    server.print(duration / TIMER0_MESS_UP_FACTOR); server.print(',');
+    server.print(F("\"motor_stop_reason\":"));
+    print_motor_stop_reason(reason); server.print(',');
+    server.print(F("\"current\":["));
+    for (uint16_t i=0; i<archive_pointer-1; i++) {
+        server.print(archive[i].current); server.print(',');
     }
+    server.print(archive[archive_pointer-1].current);
+    server.print("],");
+    server.print(F("\"position\":["));
+    for (uint16_t i=0; i<archive_pointer-1; i++) {
+        server.print(archive[i].position); server.print(',');
+    }
+    server.print(archive[archive_pointer-1].position);
+    server.print("]}");
     archive_pointer = 0;
 }
 
@@ -176,19 +180,20 @@ bool close_upper() { return move_fully_supervised(1, false); }
 bool open_lower() { return move_fully_supervised(0, true); }
 bool open_upper() { return move_fully_supervised(1, true); }
 
-void acknowledge_no_operation(char cmd)
+void ack(char cmd, bool ok)
 {
-    server.print("Ignoring command: ");
-    server.println(cmd);
+    server.print(F("{\"ok\":"));
+    server.print(ok); server.print(',');
+    server.print(F("\"state\":"));
     print_system_state();
+    server.print('}');
 }
 
 void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
-    server.print("Command Valid: ");
-    server.println(cmd);
-    print_system_state();
+    ack(cmd, true);
+
     if (close_lower() == false) {
         system_state = S_FAIL_CLOSE;
         return;
@@ -204,9 +209,7 @@ void init_drive_close(char cmd)
 void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
-    server.print("Command Valid: ");
-    server.println(cmd);
-    print_system_state();
+    ack(cmd, true);
     if (open_upper() == false){
         system_state = S_FAIL_OPEN;
         return;
@@ -243,7 +246,7 @@ void state_machine()
         )) {
         init_drive_open(c);
     } else {
-        acknowledge_no_operation(c);
+        ack(c, false);
     }
 }
 
