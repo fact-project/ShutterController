@@ -6,10 +6,10 @@
 typedef enum {
   S_CLOSED,
   S_DRIVE_CLOSING,
-  S_FAIL_CLOSING,
+  S_FAIL_CLOSE,
   S_OPEN,
   S_DRIVE_OPENING,
-  S_FAIL_OPENING,
+  S_FAIL_OPEN,
   S_UNKNOWN,
 } system_state_t;
 
@@ -37,10 +37,10 @@ void print_system_state(){
     switch (system_state){
         case S_OPEN: Serial.println("Open"); break;
         case S_DRIVE_OPENING: Serial.println("Opening"); break;
-        case S_FAIL_OPENING: Serial.println("Fail during Opening"); break;
+        case S_FAIL_OPEN: Serial.println("Fail during Opening"); break;
         case S_CLOSED: Serial.println("Closed"); break;
         case S_DRIVE_CLOSING: Serial.println("Closing"); break;
-        case S_FAIL_CLOSING: Serial.println("Fail during Closing"); break;
+        case S_FAIL_CLOSE: Serial.println("Fail during Closing"); break;
         case S_UNKNOWN: Serial.println("Unknown"); break;
     }
 }
@@ -124,11 +124,11 @@ void init_drive_close(char cmd)
     Serial.println(cmd);
     print_system_state();
     if (close_lower() == false) {
-        system_state = S_FAIL_CLOSING;
+        system_state = S_FAIL_CLOSE;
         return;
     }
     if (close_upper() == false) {
-        system_state = S_FAIL_CLOSING;
+        system_state = S_FAIL_CLOSE;
         return;
     }
     system_state = S_CLOSED;
@@ -141,11 +141,11 @@ void init_drive_open(char cmd)
     Serial.println(cmd);
     print_system_state();
     if (open_upper() == false){
-        system_state = S_FAIL_OPENING;
+        system_state = S_FAIL_OPEN;
         return;
     }
     if (open_lower() == false){
-        system_state = S_FAIL_OPENING;
+        system_state = S_FAIL_OPEN;
         return;
     }
     system_state = S_OPEN;
@@ -159,14 +159,14 @@ void state_machine(char c)
 
     if ((c == 'c') && (
         (system_state == S_OPEN) ||
-        (system_state == S_FAIL_OPENING) ||
+        (system_state == S_FAIL_OPEN) ||
         (system_state == S_UNKNOWN) ||
         (system_state == S_DRIVE_OPENING)
         )) {
         init_drive_close(c);
     } else if ((c == 'o') && (
         (system_state == S_CLOSED) ||
-        (system_state == S_FAIL_CLOSING) ||
+        (system_state == S_FAIL_CLOSE) ||
         (system_state == S_UNKNOWN) ||
         (system_state == S_DRIVE_CLOSING)
         )) {
