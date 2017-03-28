@@ -98,14 +98,12 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
             root["motor_stop_reason_name"] = "Must never happen!";
     }
 
-    /*
     JsonArray& current = root.createNestedArray("current");
     JsonArray& position = root.createNestedArray("position");
     for (uint16_t i=0; i<archive_pointer; i++) {
         current.add(archive[i].current);
         position.add(archive[i].position);
     }
-    */
     archive_pointer = 0;
     root.printTo(server);
 }
