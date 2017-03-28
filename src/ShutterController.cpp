@@ -53,18 +53,22 @@ bool is_user_command_new = false;
 const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 
 void print_system_state(){
-    server.print("Current state: ");
+    server.print(F("{\"state_name\":"));
     switch (system_state){
-        case S_OPEN: server.println("Open"); break;
-        case S_DRIVE_OPENING: server.println("Opening"); break;
-        case S_FAIL_OPEN: server.println("Fail during Opening"); break;
-        case S_CLOSED: server.println("Closed"); break;
-        case S_DRIVE_CLOSING: server.println("Closing"); break;
-        case S_FAIL_CLOSE: server.println("Fail during Closing"); break;
-        case S_UNKNOWN: server.println("Unknown"); break;
+        case S_OPEN: server.print(F("\"Open\"")); break;
+        case S_DRIVE_OPENING: server.print(F("\"Opening\"")); break;
+        case S_FAIL_OPEN: server.print(F("\"Fail during Open\"")); break;
+        case S_CLOSED: server.print(F("\"Closed\"")); break;
+        case S_DRIVE_CLOSING: server.print(F("\"Closing\"")); break;
+        case S_FAIL_CLOSE: server.print(F("\"Fail during Close\"")); break;
+        case S_UNKNOWN: server.print(F("\"Unknown\"")); break;
         default:
-            server.println("Must never happen!");
+            server.print(F("\"Must never happen!\""));
     }
+    server.print(',');
+    server.print(F("\"state_id\":"));
+    server.print(int(system_state));
+    server.println('}');
 }
 
 void print_motor_stop_reason(motor_stop_reason_t r){
