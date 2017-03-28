@@ -78,6 +78,10 @@ bool move_fully_supervised(int motor, bool open) {
         if (archive_pointer < ARCHIVE_LEN){
             archive[archive_pointer++] = motor_info;
         }
+        if (Serial.available() > 0) {
+            success = false;
+            break;
+        }
 
         if (md.is_overcurrent(motor)) {
             reason = 'O'; // O for Overcurrent
