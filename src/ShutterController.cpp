@@ -264,7 +264,6 @@ void setup()
 {
     Ethernet.begin(_mac, _ip);
     server.begin();
-    Serial.begin(115200);
     md.init();
     lh.init();
 }
