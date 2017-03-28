@@ -28,6 +28,19 @@ LinakHallSensor lh;
 
 const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
+void report_motor_info(int motor) {
+    Serial.print("info about motor: ");
+    Serial.println(motor);
+    Serial.println("current and positions");
+    for (uint16_t i=0; i<archive_pointer; i++) {
+        Serial.print(archive[i].current);
+        Serial.print(' ');
+        Serial.print(archive[i].position);
+        Serial.println();
+    }
+    archive_pointer = 0;
+}
+
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     bool success = false;
@@ -67,19 +80,6 @@ bool close_lower() { return move_fully_supervised(0, false); }
 bool close_upper() { return move_fully_supervised(1, false); }
 bool open_lower() { return move_fully_supervised(0, true); }
 bool open_upper() { return move_fully_supervised(1, true); }
-
-void report_motor_info(int motor) {
-    Serial.print('info about motor: ');
-    Serial.println(motor);
-    Serial.println("current and positions");
-    for (uint16_t i=0; i<archive_pointer; i++) {
-        Serial.print(archive[i].current);
-        Serial.print(' ');
-        Serial.print(archive[i].position);
-        Serial.println();
-    }
-    archive_pointer = 0;
-}
 
 void drive_close() {
     if (close_lower() == false) {
@@ -158,21 +158,22 @@ void state_machine(char c)
     // so here we immediately return, c.f. fetch_new_command()
     if (c == 0) return;
 
-    switch (system_state) {
-        case S_OPEN:
-        case S_FAIL_OPENING:
-        case S_UNKNOWN:
-        case S_DRIVE_OPENING:
-            if (c == 'c') init_drive_close(c);
-            break;
-        case S_CLOSED:
-        case S_FAIL_CLOSING:
-        case S_UNKNOWN:
-        case S_DRIVE_CLOSING:
-            if (c == 'o') init_drive_open(c);
-            break;
-        default:
-            acknowledge_no_operation(c);
+    if ((c == 'c') && (
+        (system_state == S_OPEN) ||
+        (system_state == S_FAIL_OPENING) ||
+        (system_state == S_UNKNOWN) ||
+        (system_state == S_DRIVE_OPENING)
+        )) {
+        init_drive_close(c);
+    } else if ((c == 'o') && (
+        (system_state == S_CLOSED) ||
+        (system_state == S_FAIL_CLOSING) ||
+        (system_state == S_UNKNOWN) ||
+        (system_state == S_DRIVE_CLOSING)
+        )) {
+        init_drive_open(c);
+    } else {
+        acknowledge_no_operation(c);
     }
 }
 
