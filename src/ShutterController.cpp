@@ -29,6 +29,7 @@ struct motor_info_t {
 };
 
 #define ARCHIVE_LEN 300
+#define TIMER0_MESS_UP_FACTOR 32UL
 int num_samples = 500;
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
@@ -40,7 +41,7 @@ LinakHallSensor lh;
 int max_open_speed[2] = {255, 255};
 int max_close_speed[2] = {-255, -255};
 
-const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * 64UL;
+const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 
 void print_system_state(){
     Serial.print("Current state: ");
@@ -77,7 +78,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     Serial.print("info about motor: ");
     Serial.println(motor);
     Serial.print("duration[ms]: ");
-    Serial.println(duration / 64);
+    Serial.println(duration / TIMER0_MESS_UP_FACTOR);
     print_motor_stop_reason(reason);
     Serial.print("current and positions: #");
     Serial.println(archive_pointer);
