@@ -152,14 +152,14 @@ void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
     acknowledge_operation(cmd);
-    drive_close();  // blocking for ~20sec
+    drive_close();
 }
 
 void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
     acknowledge_operation(cmd);
-    drive_open();  // blocking for ~20sec
+    drive_open();
 }
 
 void state_machine(char c)
