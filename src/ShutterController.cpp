@@ -128,11 +128,6 @@ void drive_open() {
     system_state = S_OPEN;
 }
 
-void drive_stop() {
-    md.setMotorSpeed(0, 0);
-    md.setMotorSpeed(1, 0);
-}
-
 void achnowledge_header(char cmd)
 {
     print_system_state();
