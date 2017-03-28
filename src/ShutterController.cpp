@@ -21,7 +21,6 @@ struct motor_info_t {
 #define ARCHIVE_LEN 300
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
-uint16_t motor_pointer[2];
 
 system_state_t system_state = S_UNKNOWN;
 DualVNH5019MotorShield md;
@@ -31,15 +30,14 @@ const unsigned long DRIVE_TIME_LIMIT_MS = 150000UL;
 
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
-    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
     bool success = false;
+    md.ramp_to_speed_blocking(motor, open ? 255 : -255);
     while (true) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, 300).mean;
         motor_info.position = lh.get_mean_std(motor, 300).mean;
         if (archive_pointer < ARCHIVE_LEN){
             archive[archive_pointer++] = motor_info;
-            motor_pointer[motor] = archive_pointer;
         }
 
         if (md.is_overcurrent(motor)) {
@@ -61,6 +59,7 @@ bool move_fully_supervised(int motor, bool open) {
         }
     }
     md.setMotorSpeed(motor, 0);
+    report_motor_info(motor);
     return success;
 }
 
@@ -69,10 +68,9 @@ bool close_upper() { return move_fully_supervised(1, false); }
 bool open_lower() { return move_fully_supervised(0, true); }
 bool open_upper() { return move_fully_supervised(1, true); }
 
-void report_motor_info() {
-    Serial.println("motor_pointers:");
-    Serial.print(0); Serial.print(' '); Serial.println(motor_pointer[0]);
-    Serial.print(1); Serial.print(' '); Serial.println(motor_pointer[1]);
+void report_motor_info(int motor) {
+    Serial.print('info about motor: ');
+    Serial.println(motor);
     Serial.println("current and positions");
     for (uint16_t i=0; i<archive_pointer; i++) {
         Serial.print(archive[i].current);
@@ -81,38 +79,30 @@ void report_motor_info() {
         Serial.println();
     }
     archive_pointer = 0;
-    motor_pointer[0] = 0;
-    motor_pointer[1] = 0;
 }
 
 void drive_close() {
     if (close_lower() == false) {
         system_state = S_FAIL_CLOSING;
-        report_motor_info();
         return;
     }
     if (close_upper() == false) {
         system_state = S_FAIL_CLOSING;
-        report_motor_info();
         return;
     }
     system_state = S_CLOSED;
-    report_motor_info();
 }
 
 void drive_open() {
     if (open_upper() == false){
         system_state = S_FAIL_OPENING;
-        report_motor_info();
         return;
     }
     if (open_lower() == false){
         system_state = S_FAIL_OPENING;
-        report_motor_info();
         return;
     }
     system_state = S_OPEN;
-    report_motor_info();
 }
 
 void drive_stop() {
