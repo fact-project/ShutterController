@@ -82,11 +82,11 @@ void print_motor_stop_reason(motor_stop_reason_t r){
 }
 
 void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
-    StaticJsonBuffer<500> jsonBuffer;
+    StaticJsonBuffer<200> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["motor_id"] = motor;
     root["duration"] = duration / TIMER0_MESS_UP_FACTOR;
-    root["motor_stop_reason_number"] = int(reason);
+    root["motor_stop_reason_number"] = reason;
     switch (reason){
         case M_TIMEOUT: root["motor_stop_reason_name"] = "Timeout"; break;
         case M_OVERCURRENT: root["motor_stop_reason_name"] = "Overcurrent"; break;
@@ -100,7 +100,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
 
     JsonArray& current = root.createNestedArray("current");
     JsonArray& position = root.createNestedArray("position");
-    for (uint16_t i=0; i<max(20, archive_pointer); i++) {
+    for (uint16_t i=0; i<10; i++) {
         current.add(archive[i].current);
         position.add(archive[i].position);
     }
@@ -108,6 +108,8 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     archive_pointer = 0;
     Serial.print("root.measureLength:");
     Serial.println(root.measureLength());
+    root.printTo(Serial);
+    Serial.println();
     root.printTo(server);
 }
 
