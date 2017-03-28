@@ -71,8 +71,8 @@ bool open_upper() { return move_fully_supervised(1, true); }
 
 void report_motor_info() {
     Serial.println("motor_pointers:");
-    Serial.print(0); Serial.println(motor_pointer[0]);
-    Serial.print(1); Serial.println(motor_pointer[1]);
+    Serial.print(0); Serial.print(' '); Serial.println(motor_pointer[0]);
+    Serial.print(1); Serial.print(' '); Serial.println(motor_pointer[1]);
     Serial.println("current and positions");
     for (uint16_t i=0; i<archive_pointer; i++) {
         Serial.print(archive[i].current);
