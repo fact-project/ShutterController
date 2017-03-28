@@ -89,7 +89,6 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
         Serial.println();
     }
     archive_pointer = 0;
-    print_system_state();
 }
 
 bool move_fully_supervised(int motor, bool open) {
@@ -161,6 +160,7 @@ void init_drive_close(char cmd)
         return;
     }
     system_state = S_CLOSED;
+    print_system_state();
 }
 
 void init_drive_open(char cmd)
@@ -178,6 +178,7 @@ void init_drive_open(char cmd)
         return;
     }
     system_state = S_OPEN;
+    print_system_state();
 }
 
 void state_machine(char c)
