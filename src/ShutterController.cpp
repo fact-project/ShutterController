@@ -218,7 +218,10 @@ void state_machine()
     // 0 or '\0' is the special case that means, no new command recieved
     // so here we immediately return, c.f. fetch_new_command()
     if (c == 0) return;
-
+    if (c == 's') {
+        print_system_state();
+        return;
+    }
     if ((c == 'c') && (
         (system_state == S_OPEN) ||
         (system_state == S_FAIL_OPEN) ||
