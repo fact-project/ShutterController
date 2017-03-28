@@ -2,6 +2,12 @@
 #include "DualVNH5019MotorShield.h"
 #include "LinakHallSensor.h"
 #include <stdio.h> // for function sprintf
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte _mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x5C, 0x91 };
+IPAddress _ip(10,0,100,36);
+EthernetServer server(80);
 
 typedef enum {
   S_CLOSED,
@@ -224,9 +230,12 @@ char fetch_new_command()
 
 void setup()
 {
-  Serial.begin(115200);
-  md.init();
-  lh.init();
+    Ethernet.begin(_mac, _ip);
+    server.begin();
+
+    Serial.begin(115200);
+    md.init();
+    lh.init();
 }
 
 void loop()
