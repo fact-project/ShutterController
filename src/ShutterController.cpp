@@ -106,10 +106,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     }
 
     archive_pointer = 0;
-    Serial.print("root.measureLength:");
-    Serial.println(root.measureLength());
     root.printTo(Serial);
-    Serial.println();
     root.printTo(server);
 }
 
