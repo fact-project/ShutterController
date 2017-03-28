@@ -59,7 +59,7 @@ const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 void print_system_state(){
     StaticJsonBuffer<100> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
-    root["state_number"] = system_state;
+    root["state_number"] = int(system_state);
     switch (system_state){
         case S_OPEN: root["state_name"] = "Open"; break;
         case S_DRIVE_OPENING: root["state_name"] = "Opening"; break;
