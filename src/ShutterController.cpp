@@ -128,36 +128,28 @@ void drive_open() {
     system_state = S_OPEN;
 }
 
-void achnowledge_header(char cmd)
-{
-    print_system_state();
-    Serial.print("Received command:");
-    Serial.println(cmd);
-}
-
 void acknowledge_no_operation(char cmd)
 {
-    Serial.println("Ignoring command.");
-    achnowledge_header(cmd);
-}
-
-void acknowledge_operation(char cmd)
-{
-    Serial.println("Command Valid:");
-    achnowledge_header(cmd);
+    Serial.print("Ignoring command: ");
+    Serial.println(cmd);
+    print_system_state();
 }
 
 void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
-    acknowledge_operation(cmd);
+    Serial.print("Command Valid: ");
+    Serial.println(cmd);
+    print_system_state();
     drive_close();
 }
 
 void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
-    acknowledge_operation(cmd);
+    Serial.print("Command Valid: ");
+    Serial.println(cmd);
+    print_system_state();
     drive_open();
 }
 
