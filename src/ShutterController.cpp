@@ -29,7 +29,7 @@ struct motor_info_t {
 };
 
 #define ARCHIVE_LEN 300
-int num_samples = 300;
+int num_samples = 500;
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
 
