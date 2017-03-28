@@ -108,7 +108,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
         server.print(archive[i].position); server.print(',');
     }
     server.print(archive[archive_pointer-1].position);
-    server.print("]}");
+    server.println("]}");
     archive_pointer = 0;
 }
 
@@ -186,7 +186,7 @@ void ack(char cmd, bool ok)
     server.print(ok); server.print(',');
     server.print(F("\"state\":"));
     print_system_state();
-    server.print('}');
+    server.println('}');
 }
 
 void init_drive_close(char cmd)
@@ -203,7 +203,7 @@ void init_drive_close(char cmd)
         return;
     }
     system_state = S_CLOSED;
-    print_system_state();
+    ack(cmd, true);
 }
 
 void init_drive_open(char cmd)
@@ -219,7 +219,7 @@ void init_drive_open(char cmd)
         return;
     }
     system_state = S_OPEN;
-    print_system_state();
+    ack(cmd, true);
 }
 
 void state_machine()
