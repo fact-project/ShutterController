@@ -122,7 +122,7 @@ void achnowledge_header(char cmd)
         case S_FAIL_CLOSING: Serial.println("Fail during Closing"); break;
         case S_UNKNOWN: Serial.println("Unknown"); break;
     }
-    Serial.write("Received command:");
+    Serial.print("Received command:");
     Serial.println(cmd);
 }
 
