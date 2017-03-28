@@ -64,21 +64,10 @@ bool move_fully_supervised(int motor, bool open) {
     return success;
 }
 
-bool close_lower() {
-    return move_fully_supervised(0, false);
-}
-
-bool close_upper() {
-    return move_fully_supervised(1, false);
-}
-
-bool open_lower() {
-    return move_fully_supervised(0, true);
-}
-
-bool open_upper() {
-    return move_fully_supervised(1, true);
-}
+bool close_lower() { return move_fully_supervised(0, false); }
+bool close_upper() { return move_fully_supervised(1, false); }
+bool open_lower() { return move_fully_supervised(0, true); }
+bool open_upper() { return move_fully_supervised(1, true); }
 
 void report_motor_info() {
     Serial.println("motor_pointers:");
