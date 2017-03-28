@@ -19,6 +19,7 @@ struct motor_info_t {
 };
 
 #define ARCHIVE_LEN 300
+int num_samples = 300;
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
 
@@ -51,8 +52,8 @@ bool move_fully_supervised(int motor, bool open) {
     md.ramp_to_speed_blocking(motor, speed);
     while (true) {
         motor_info_t motor_info;
-        motor_info.current = md.get_mean_std(motor, 300).mean;
-        motor_info.position = lh.get_mean_std(motor, 300).mean;
+        motor_info.current = md.get_mean_std(motor, num_samples).mean;
+        motor_info.position = lh.get_mean_std(motor, num_samples).mean;
         if (archive_pointer < ARCHIVE_LEN){
             archive[archive_pointer++] = motor_info;
         }
