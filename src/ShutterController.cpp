@@ -68,7 +68,7 @@ void print_system_state(){
     server.print(',');
     server.print(F("\"state_id\":"));
     server.print(int(system_state));
-    server.println('}');
+    server.print('}');
 }
 
 void print_motor_stop_reason(motor_stop_reason_t r){
@@ -86,7 +86,7 @@ void print_motor_stop_reason(motor_stop_reason_t r){
     server.print(',');
     server.print(F("\"motor_stop_id\":"));
     server.print(int(r));
-    server.println('}');
+    server.print('}');
 }
 
 
