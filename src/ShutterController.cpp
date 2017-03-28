@@ -47,6 +47,9 @@ LinakHallSensor lh;
 int max_open_speed[2] = {255, 255};
 int max_close_speed[2] = {-255, -255};
 
+char user_command = 0;
+bool is_user_command_new = false;
+
 const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 
 void print_system_state(){
@@ -97,6 +100,17 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     archive_pointer = 0;
 }
 
+void fetch_new_command()
+{
+    EthernetClient client = server.available();
+    if (client) {
+        if (client.available() > 0){
+            user_command = client.read();
+            is_user_command_new = true;
+        }
+    }
+}
+
 bool move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     unsigned long duration = 0;
@@ -110,6 +124,21 @@ bool move_fully_supervised(int motor, bool open) {
         motor_info.position = lh.get_mean_std(motor, num_samples).mean;
         if (archive_pointer < ARCHIVE_LEN){
             archive[archive_pointer++] = motor_info;
+        }
+        fetch_new_command();
+        if (is_user_command_new){
+            char p = user_command;
+            if ((open && p != 'o') ||
+                (!open && p != 'c'))
+            {
+                reason = M_USER_INTERUPT;
+                success = false;
+                break;
+            }
+            else{
+                is_user_command_new = false;
+            }
+
         }
 
         if (md.is_overcurrent(motor)) {
@@ -182,8 +211,10 @@ void init_drive_open(char cmd)
     print_system_state();
 }
 
-void state_machine(char c)
+void state_machine()
 {
+    char c = user_command;
+    is_user_command_new = false;
     // 0 or '\0' is the special case that means, no new command recieved
     // so here we immediately return, c.f. fetch_new_command()
     if (c == 0) return;
@@ -205,20 +236,6 @@ void state_machine(char c)
     }
 }
 
-char fetch_new_command()
-{
-    EthernetClient client = server.available();
-    if (client) {
-        if (client.available() > 0){
-            return client.read();
-        }
-    }
-
-    // I define 0 or '\0' is the special char, that means:
-    // no new command recieved, c.f. state_mache()
-    return 0;
-}
-
 void setup()
 {
     Ethernet.begin(_mac, _ip);
@@ -229,6 +246,7 @@ void setup()
 
 void loop()
 {
-    state_machine(fetch_new_command());
+    fetch_new_command();
+    if (is_user_command_new) state_machine();
 }
 
