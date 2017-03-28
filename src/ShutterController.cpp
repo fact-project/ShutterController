@@ -164,6 +164,10 @@ void init_drive_open(char cmd)
 
 void state_machine(char c)
 {
+    // 0 or '\0' is the special case that means, no new command recieved
+    // so here we immediately return, c.f. fetch_new_command()
+    if (c == 0) return;
+
     switch (system_state) {
         case S_OPEN:
         case S_FAIL_OPENING:
@@ -189,7 +193,9 @@ char fetch_new_command()
     }
     else
     {
-        return ' ';
+        // I define 0 or '\0' is the special char, that means:
+        // no new command recieved, c.f. state_mache()
+        return 0;
     }
 }
 
