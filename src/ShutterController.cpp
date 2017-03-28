@@ -82,7 +82,7 @@ void print_motor_stop_reason(motor_stop_reason_t r){
 }
 
 void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
-    StaticJsonBuffer<1000> jsonBuffer;
+    StaticJsonBuffer<5000> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["motor_id"] = motor;
     root["duration"] = duration / TIMER0_MESS_UP_FACTOR;
@@ -98,15 +98,15 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
             root["motor_stop_reason_name"] = "Must never happen!";
     }
 
-    /*
     JsonArray& current = root.createNestedArray("current");
     JsonArray& position = root.createNestedArray("position");
     for (uint16_t i=0; i<archive_pointer; i++) {
         current.add(archive[i].current);
         position.add(archive[i].position);
     }
-    */
+
     archive_pointer = 0;
+    root.printTo(Serial);
     root.printTo(server);
 }
 
