@@ -76,11 +76,9 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
 
     Serial.print("info about motor: ");
     Serial.println(motor);
-    Serial.print("duration: ");
-    Serial.println(duration);
+    Serial.print("duration[ms]: ");
+    Serial.println(duration / 64);
     print_motor_stop_reason(reason);
-    Serial.print("reason: ");
-    Serial.println(reason);
     Serial.print("current and positions: #");
     Serial.println(archive_pointer);
     for (uint16_t i=0; i<archive_pointer; i++) {
