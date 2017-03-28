@@ -36,8 +36,10 @@ bool move_fully_supervised(int motor, bool open) {
         motor_info_t motor_info;
         motor_info.current = md.get_mean_std(motor, 300).mean;
         motor_info.position = lh.get_mean_std(motor, 300).mean;
-        archive[archive_pointer++] = motor_info;
-        motor_pointer[motor] = archive_pointer;
+        if (archive_pointer < ARCHIVE_LEN){
+            archive[archive_pointer++] = motor_info;
+            motor_pointer[motor] = archive_pointer;
+        }
 
         if (md.is_overcurrent(motor)) {
             Serial.println("is_overcurrent");
