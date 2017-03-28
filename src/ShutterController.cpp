@@ -45,7 +45,7 @@ void print_system_state(){
     }
 }
 void report_motor_info(int motor, unsigned long duration, char reason) {
-    print_system_state();
+
     Serial.print("info about motor: ");
     Serial.println(motor);
     Serial.print("duration: ");
@@ -61,6 +61,7 @@ void report_motor_info(int motor, unsigned long duration, char reason) {
         Serial.println();
     }
     archive_pointer = 0;
+    print_system_state();
 }
 
 bool move_fully_supervised(int motor, bool open) {
