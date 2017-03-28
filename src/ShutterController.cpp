@@ -59,7 +59,7 @@ void print_system_state(){
 
 void print_motor_stop_reason(motor_stop_reason_t r){
     Serial.print("Motor Stop Reason: ");
-    switch (t){
+    switch (r){
         case M_TIMEOUT: Serial.println("Timeout"); break;
         case M_OVERCURRENT: Serial.println("Overcurrent"); break;
         case M_ZEROCURRENT: Serial.println("Zerocurrent/Endswitch"); break;
@@ -78,7 +78,7 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     Serial.println(motor);
     Serial.print("duration: ");
     Serial.println(duration);
-    print_motor_stop_reason(reason)
+    print_motor_stop_reason(reason);
     Serial.print("reason: ");
     Serial.println(reason);
     Serial.print("current and positions: #");
@@ -114,7 +114,7 @@ bool move_fully_supervised(int motor, bool open) {
         }
 
         if (md.is_overcurrent(motor)) {
-            reason = M_OVERCURRENT
+            reason = M_OVERCURRENT;
             success = open ? false : true;
             break;
         }
