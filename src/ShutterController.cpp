@@ -17,6 +17,7 @@ typedef enum {
   S_DRIVE_OPENING,
   S_FAIL_OPEN,
   S_UNKNOWN,
+  S_MOVEMENT_INTERRUPTED_BY_COMMAND,
 } system_state_t;
 
 typedef enum {
@@ -27,6 +28,12 @@ typedef enum {
     M_POSITION_REACHED,
     M_USER_INTERUPT,
 } motor_stop_reason_t;
+
+typedef enum {
+    D_SUCCESS,
+    D_USER_INTERRUPT,
+    D_FAIL,
+} drive_success_t;
 
 
 struct motor_info_t {
@@ -62,6 +69,7 @@ void print_system_state(){
         case S_DRIVE_CLOSING: server.print(F("\"Closing\"")); break;
         case S_FAIL_CLOSE: server.print(F("\"Fail during Close\"")); break;
         case S_UNKNOWN: server.print(F("\"Unknown\"")); break;
+        case S_MOVEMENT_INTERRUPTED_BY_COMMAND: server.print(F("\"UserInterrupt\"")); break;
         default:
             server.print(F("\"Must never happen!\""));
     }
@@ -114,6 +122,10 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
 
 void fetch_new_command()
 {
+    // in case for some reason the last command has not been
+    // processed yet. We do not do anything.
+    if (is_user_command_new) return;
+
     EthernetClient client = server.available();
     if (client) {
         if (client.available() > 0){
@@ -123,10 +135,10 @@ void fetch_new_command()
     }
 }
 
-bool move_fully_supervised(int motor, bool open) {
+drive_success_t move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     unsigned long duration = 0;
-    bool success = false;
+    drive_success_t success = D_FAIL;
     int speed = open ? max_open_speed[motor] : max_close_speed[motor];
     md.ramp_to_speed_blocking(motor, speed);
     motor_stop_reason_t reason = M_NO_REASON;
@@ -139,34 +151,25 @@ bool move_fully_supervised(int motor, bool open) {
         }
         fetch_new_command();
         if (is_user_command_new){
-            char p = user_command;
-            if ((open && p != 'o') ||
-                (!open && p != 'c'))
-            {
-                reason = M_USER_INTERUPT;
-                success = false;
-                break;
-            }
-            else{
-                is_user_command_new = false;
-            }
-
+            reason = M_USER_INTERUPT;
+            success = D_USER_INTERRUPT;
+            break;
         }
 
         if (md.is_overcurrent(motor)) {
             reason = M_OVERCURRENT;
-            success = open ? false : true;
+            success = open ? D_FAIL : D_SUCCESS;
             break;
         }
         if (md.is_zerocurrent(motor)){
             reason = M_ZEROCURRENT;
-            success = true;
+            success = D_SUCCESS;
             break;
         }
         duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
             reason = M_TIMEOUT;
-            success = false;
+            success = D_FAIL;
             break;
         }
     }
@@ -175,15 +178,17 @@ bool move_fully_supervised(int motor, bool open) {
     return success;
 }
 
-bool close_lower() { return move_fully_supervised(0, false); }
-bool close_upper() { return move_fully_supervised(1, false); }
-bool open_lower() { return move_fully_supervised(0, true); }
-bool open_upper() { return move_fully_supervised(1, true); }
+drive_success_t close_lower() { return move_fully_supervised(0, false); }
+drive_success_t close_upper() { return move_fully_supervised(1, false); }
+drive_success_t open_lower() { return move_fully_supervised(0, true); }
+drive_success_t open_upper() { return move_fully_supervised(1, true); }
 
 void ack(char cmd, bool ok)
 {
     server.print(F("{\"ok\":"));
     server.print(ok); server.print(',');
+    server.print(F("{\"cmd[int]\":"));
+    server.print(int(cmd)); server.print(',');
     server.print(F("\"state\":"));
     print_system_state();
     server.println('}');
@@ -194,15 +199,28 @@ void init_drive_close(char cmd)
     system_state = S_DRIVE_CLOSING;
     ack(cmd, true);
 
-    if (close_lower() == false) {
-        system_state = S_FAIL_CLOSE;
-        return;
+    switch (close_lower()){
+        case D_FAIL:
+            system_state = S_FAIL_CLOSE;
+            return;
+        case D_USER_INTERRUPT:
+            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            return;
+        case D_SUCCESS:
+            system_state = S_DRIVE_CLOSING;
     }
-    if (close_upper() == false) {
-        system_state = S_FAIL_CLOSE;
-        return;
+
+    switch (close_upper()){
+        case D_FAIL:
+            system_state = S_FAIL_CLOSE;
+            return;
+        case D_USER_INTERRUPT:
+            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            return;
+        case D_SUCCESS:
+            system_state = S_CLOSED;
     }
-    system_state = S_CLOSED;
+
     ack(cmd, true);
 }
 
@@ -210,15 +228,29 @@ void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
     ack(cmd, true);
-    if (open_upper() == false){
-        system_state = S_FAIL_OPEN;
-        return;
+
+    switch (open_upper()){
+        case D_FAIL:
+            system_state = S_FAIL_OPEN;
+            return;
+        case D_USER_INTERRUPT:
+            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            return;
+        case D_SUCCESS:
+            system_state = S_DRIVE_OPENING;
     }
-    if (open_lower() == false){
-        system_state = S_FAIL_OPEN;
-        return;
+
+    switch (open_lower()){
+        case D_FAIL:
+            system_state = S_FAIL_OPEN;
+            return;
+        case D_USER_INTERRUPT:
+            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            return;
+        case D_SUCCESS:
+            system_state = S_OPEN;
     }
-    system_state = S_OPEN;
+
     ack(cmd, true);
 }
 
@@ -236,12 +268,14 @@ void state_machine()
     if ((c == 'c') && (
         (system_state == S_OPEN) ||
         (system_state == S_FAIL_OPEN) ||
+        (system_state == S_MOVEMENT_INTERRUPTED_BY_COMMAND) ||
         (system_state == S_UNKNOWN)
         )) {
         init_drive_close(c);
     } else if ((c == 'o') && (
         (system_state == S_CLOSED) ||
         (system_state == S_FAIL_CLOSE) ||
+        (system_state == S_MOVEMENT_INTERRUPTED_BY_COMMAND) ||
         (system_state == S_UNKNOWN)
         )) {
         init_drive_open(c);
@@ -258,9 +292,16 @@ void setup()
     lh.init();
 }
 
+unsigned long time_of_last_heart_beat = millis();
+
 void loop()
 {
     fetch_new_command();
     if (is_user_command_new) state_machine();
+
+    if (millis() - time_of_last_heart_beat > 1000 * TIMER0_MESS_UP_FACTOR){
+        time_of_last_heart_beat = millis();
+        ack('H', true);
+    }
 }
 
