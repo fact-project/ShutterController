@@ -28,13 +28,6 @@ typedef enum {
     M_USER_INTERUPT,
 } motor_stop_reason_t;
 
-typedef enum {
-    D_SUCCESS,
-    D_USER_INTERRUPT,
-    D_FAIL,
-} drive_success_t;
-
-
 struct motor_info_t {
     uint16_t current;
     uint16_t position;
@@ -133,10 +126,9 @@ void fetch_new_command()
     }
 }
 
-drive_success_t move_fully_supervised(int motor, bool open) {
+void move_fully_supervised(int motor, bool open) {
     unsigned long start_time = millis();
     unsigned long duration = 0;
-    drive_success_t success = D_FAIL;
     int speed = open ? max_open_speed[motor] : max_close_speed[motor];
     md.ramp_to_speed_blocking(motor, speed);
     motor_stop_reason_t reason = M_NO_REASON;
@@ -150,36 +142,35 @@ drive_success_t move_fully_supervised(int motor, bool open) {
         fetch_new_command();
         if (is_user_command_new){
             reason = M_USER_INTERUPT;
-            success = D_USER_INTERRUPT;
+            system_state = S_UNKNOWN;
             break;
         }
 
         if (md.is_overcurrent(motor)) {
             reason = M_OVERCURRENT;
-            success = open ? D_FAIL : D_SUCCESS;
+            if (open) system_state = S_FAIL_OPEN;
             break;
         }
         if (md.is_zerocurrent(motor)){
             reason = M_ZEROCURRENT;
-            success = D_SUCCESS;
             break;
         }
         duration = millis() - start_time;
         if (duration > DRIVE_TIME_LIMIT_MS) {
             reason = M_TIMEOUT;
-            success = D_FAIL;
+            system_state = open ? S_FAIL_OPEN : S_FAIL_CLOSE;
             break;
         }
     }
     md.setMotorSpeed(motor, 0);
     report_motor_info(motor, duration, reason);
-    return success;
+    return;
 }
 
-drive_success_t close_lower() { return move_fully_supervised(0, false); }
-drive_success_t close_upper() { return move_fully_supervised(1, false); }
-drive_success_t open_lower() { return move_fully_supervised(0, true); }
-drive_success_t open_upper() { return move_fully_supervised(1, true); }
+void close_lower() { move_fully_supervised(0, false); }
+void close_upper() { move_fully_supervised(1, false); }
+void open_lower() { move_fully_supervised(0, true); }
+void open_upper() { move_fully_supervised(1, true); }
 
 void ack(char cmd, bool ok)
 {
@@ -196,29 +187,9 @@ void init_drive_close(char cmd)
 {
     system_state = S_DRIVE_CLOSING;
     ack(cmd, true);
-
-    switch (close_lower()){
-        case D_FAIL:
-            system_state = S_FAIL_CLOSE;
-            return;
-        case D_USER_INTERRUPT:
-            system_state = S_UNKNOWN;
-            return;
-        case D_SUCCESS:
-            system_state = S_DRIVE_CLOSING;
-    }
-
-    switch (close_upper()){
-        case D_FAIL:
-            system_state = S_FAIL_CLOSE;
-            return;
-        case D_USER_INTERRUPT:
-            system_state = S_UNKNOWN;
-            return;
-        case D_SUCCESS:
-            system_state = S_CLOSED;
-    }
-
+    close_lower();
+    if (system_state != S_DRIVE_CLOSING) return;
+    close_upper();
     ack(cmd, true);
 }
 
@@ -226,29 +197,9 @@ void init_drive_open(char cmd)
 {
     system_state = S_DRIVE_OPENING;
     ack(cmd, true);
-
-    switch (open_upper()){
-        case D_FAIL:
-            system_state = S_FAIL_OPEN;
-            return;
-        case D_USER_INTERRUPT:
-            system_state = S_UNKNOWN;
-            return;
-        case D_SUCCESS:
-            system_state = S_DRIVE_OPENING;
-    }
-
-    switch (open_lower()){
-        case D_FAIL:
-            system_state = S_FAIL_OPEN;
-            return;
-        case D_USER_INTERRUPT:
-            system_state = S_UNKNOWN;
-            return;
-        case D_SUCCESS:
-            system_state = S_OPEN;
-    }
-
+    open_upper();
+    if (system_state != S_DRIVE_OPENING) return;
+    open_lower();
     ack(cmd, true);
 }
 
