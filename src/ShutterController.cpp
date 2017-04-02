@@ -17,7 +17,6 @@ typedef enum {
   S_DRIVE_OPENING,
   S_FAIL_OPEN,
   S_UNKNOWN,
-  S_MOVEMENT_INTERRUPTED_BY_COMMAND,
 } system_state_t;
 
 typedef enum {
@@ -69,7 +68,6 @@ void print_system_state(){
         case S_DRIVE_CLOSING: server.print(F("\"Closing\"")); break;
         case S_FAIL_CLOSE: server.print(F("\"Fail during Close\"")); break;
         case S_UNKNOWN: server.print(F("\"Unknown\"")); break;
-        case S_MOVEMENT_INTERRUPTED_BY_COMMAND: server.print(F("\"UserInterrupt\"")); break;
         default:
             server.print(F("\"Must never happen!\""));
     }
@@ -204,7 +202,7 @@ void init_drive_close(char cmd)
             system_state = S_FAIL_CLOSE;
             return;
         case D_USER_INTERRUPT:
-            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            system_state = S_UNKNOWN;
             return;
         case D_SUCCESS:
             system_state = S_DRIVE_CLOSING;
@@ -215,7 +213,7 @@ void init_drive_close(char cmd)
             system_state = S_FAIL_CLOSE;
             return;
         case D_USER_INTERRUPT:
-            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            system_state = S_UNKNOWN;
             return;
         case D_SUCCESS:
             system_state = S_CLOSED;
@@ -234,7 +232,7 @@ void init_drive_open(char cmd)
             system_state = S_FAIL_OPEN;
             return;
         case D_USER_INTERRUPT:
-            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            system_state = S_UNKNOWN;
             return;
         case D_SUCCESS:
             system_state = S_DRIVE_OPENING;
@@ -245,7 +243,7 @@ void init_drive_open(char cmd)
             system_state = S_FAIL_OPEN;
             return;
         case D_USER_INTERRUPT:
-            system_state = S_MOVEMENT_INTERRUPTED_BY_COMMAND;
+            system_state = S_UNKNOWN;
             return;
         case D_SUCCESS:
             system_state = S_OPEN;
@@ -268,14 +266,12 @@ void state_machine()
     if ((c == 'c') && (
         (system_state == S_OPEN) ||
         (system_state == S_FAIL_OPEN) ||
-        (system_state == S_MOVEMENT_INTERRUPTED_BY_COMMAND) ||
         (system_state == S_UNKNOWN)
         )) {
         init_drive_close(c);
     } else if ((c == 'o') && (
         (system_state == S_CLOSED) ||
         (system_state == S_FAIL_CLOSE) ||
-        (system_state == S_MOVEMENT_INTERRUPTED_BY_COMMAND) ||
         (system_state == S_UNKNOWN)
         )) {
         init_drive_open(c);
