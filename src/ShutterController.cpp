@@ -51,7 +51,7 @@ bool is_user_command_new = false;
 
 const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
 
-void print_system_state(){
+void print_system_state_to_ethernet(){
     server.print(F("{\"state_name\":"));
     switch (system_state){
         case S_OPEN: server.print(F("\"Open\"")); break;
@@ -70,7 +70,31 @@ void print_system_state(){
     server.print('}');
 }
 
-void print_motor_stop_reason(motor_stop_reason_t r){
+void print_system_state_to_USB(){
+    Serial.print(F("{\"state_name\":"));
+    switch (system_state){
+        case S_OPEN: Serial.print(F("\"Open\"")); break;
+        case S_DRIVE_OPENING: Serial.print(F("\"Opening\"")); break;
+        case S_FAIL_OPEN: Serial.print(F("\"Fail during Open\"")); break;
+        case S_CLOSED: Serial.print(F("\"Closed\"")); break;
+        case S_DRIVE_CLOSING: Serial.print(F("\"Closing\"")); break;
+        case S_FAIL_CLOSE: Serial.print(F("\"Fail during Close\"")); break;
+        case S_UNKNOWN: Serial.print(F("\"Unknown\"")); break;
+        default:
+            Serial.print(F("\"Must never happen!\""));
+    }
+    Serial.print(',');
+    Serial.print(F("\"state_id\":"));
+    Serial.print(int(system_state));
+    Serial.print('}');
+}
+
+void print_system_state(){
+    print_system_state_to_ethernet();
+    print_system_state_to_USB();
+}
+
+void print_motor_stop_reason_to_ethernet(motor_stop_reason_t r){
     server.print(F("{\"motor_stop_name\":"));
     switch (r){
         case M_TIMEOUT: server.print(F("\"Timeout\"")); break;
@@ -89,13 +113,32 @@ void print_motor_stop_reason(motor_stop_reason_t r){
 }
 
 
-void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
+void print_motor_stop_reason_to_USB(motor_stop_reason_t r){
+    Serial.print(F("{\"motor_stop_name\":"));
+    switch (r){
+        case M_TIMEOUT: Serial.print(F("\"Timeout\"")); break;
+        case M_OVERCURRENT: Serial.print(F("\"Overcurrent\"")); break;
+        case M_ZEROCURRENT: Serial.print(F("\"Zerocurrent/Endswitch\"")); break;
+        case M_POSITION_REACHED: Serial.print(F("\"Position Reached\"")); break;
+        case M_NO_REASON: Serial.print(F("\"No Reason! bug!!!\"")); break;
+        case M_USER_INTERUPT: Serial.print(F("\"User Interupt\"")); break;
+        default:
+            Serial.print(F("\"Must never happen!\""));
+    }
+    Serial.print(',');
+    Serial.print(F("\"motor_stop_id\":"));
+    Serial.print(int(r));
+    Serial.print('}');
+}
+
+
+void report_motor_info_to_ethernet(int motor, unsigned long duration, motor_stop_reason_t reason) {
     server.print(F("{\"motor_id\":"));
     server.print(motor); server.print(',');
     server.print(F("\"duration[ms]\":"));
     server.print(duration / TIMER0_MESS_UP_FACTOR); server.print(',');
     server.print(F("\"motor_stop_reason\":"));
-    print_motor_stop_reason(reason); server.print(',');
+    print_motor_stop_reason_to_ethernet(reason); server.print(',');
     server.print(F("\"current\":["));
     for (uint16_t i=0; i<archive_pointer-1; i++) {
         server.print(archive[i].current); server.print(',');
@@ -108,13 +151,48 @@ void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t re
     }
     server.print(archive[archive_pointer-1].position);
     server.println("]}");
+}
+
+void report_motor_info_to_USB(int motor, unsigned long duration, motor_stop_reason_t reason) {
+    Serial.print(F("{\"motor_id\":"));
+    Serial.print(motor); Serial.print(',');
+    Serial.print(F("\"duration[ms]\":"));
+    Serial.print(duration / TIMER0_MESS_UP_FACTOR); Serial.print(',');
+    Serial.print(F("\"motor_stop_reason\":"));
+    print_motor_stop_reason_to_USB(reason); Serial.print(',');
+    Serial.print(F("\"current\":["));
+    for (uint16_t i=0; i<archive_pointer-1; i++) {
+        Serial.print(archive[i].current); Serial.print(',');
+    }
+    Serial.print(archive[archive_pointer-1].current);
+    Serial.print("],");
+    Serial.print(F("\"position\":["));
+    for (uint16_t i=0; i<archive_pointer-1; i++) {
+        Serial.print(archive[i].position); Serial.print(',');
+    }
+    Serial.print(archive[archive_pointer-1].position);
+    Serial.println("]}");
+}
+
+void report_motor_info(int motor, unsigned long duration, motor_stop_reason_t reason) {
+
+    report_motor_info_to_ethernet(motor, duration, reason);
+    report_motor_info_to_USB(motor, duration, reason);
     archive_pointer = 0;
+
 }
 
 void fetch_new_command()
 {
     // in case for some reason the last command has not been
     // processed yet. We do not do anything.
+    if (is_user_command_new) return;
+
+    if (Serial.available() > 0){
+        user_command = Serial.read();
+        is_user_command_new = true;
+    }
+
     if (is_user_command_new) return;
 
     EthernetClient client = server.available();
@@ -233,6 +311,7 @@ void state_machine()
 
 void setup()
 {
+    Serial.begin(115200);
     Ethernet.begin(_mac, _ip);
     server.begin();
     md.init();
