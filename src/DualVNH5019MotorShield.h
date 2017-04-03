@@ -39,11 +39,11 @@ class DualVNH5019MotorShield
 
     unsigned char _INA1;
     unsigned char _INB1;
-    static const unsigned char _PWM1 = 5;
+    unsigned char _PWM1;
     unsigned char _CS1;
     unsigned char _INA2;
     unsigned char _INB2;
-    static const unsigned char _PWM2 = 6;
+    unsigned char _PWM2;
     unsigned char _CS2;
 
     int current_speed_M1 = 0;

@@ -8,9 +8,11 @@ DualVNH5019MotorShield::DualVNH5019MotorShield()
   _INA1 = 2;
   _INB1 = 3;
   _CS1 = A4;
+  _PWM1 = 5;
   _INA2 = 7;
   _INB2 = 8;
   _CS2 = A5;
+  _PWM2 = 6;
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
