@@ -34,7 +34,6 @@ struct motor_info_t {
 };
 
 #define ARCHIVE_LEN 300
-#define TIMER0_MESS_UP_FACTOR 32UL
 int num_samples = 700;
 motor_info_t archive[ARCHIVE_LEN];
 uint16_t archive_pointer = 0;
@@ -49,7 +48,7 @@ int max_close_speed[2] = {-255, -255};
 char user_command = 0;
 bool is_user_command_new = false;
 
-const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL * TIMER0_MESS_UP_FACTOR;
+const unsigned long DRIVE_TIME_LIMIT_MS = 15000UL;
 
 void print_system_state_to_ethernet(){
     server.print(F("{\"state_name\":"));
@@ -136,7 +135,7 @@ void report_motor_info_to_ethernet(int motor, unsigned long duration, motor_stop
     server.print(F("{\"motor_id\":"));
     server.print(motor); server.print(',');
     server.print(F("\"duration[ms]\":"));
-    server.print(duration / TIMER0_MESS_UP_FACTOR); server.print(',');
+    server.print(duration); server.print(',');
     server.print(F("\"motor_stop_reason\":"));
     print_motor_stop_reason_to_ethernet(reason); server.print(',');
     server.print(F("\"current\":["));
@@ -157,7 +156,7 @@ void report_motor_info_to_USB(int motor, unsigned long duration, motor_stop_reas
     Serial.print(F("{\"motor_id\":"));
     Serial.print(motor); Serial.print(',');
     Serial.print(F("\"duration[ms]\":"));
-    Serial.print(duration / TIMER0_MESS_UP_FACTOR); Serial.print(',');
+    Serial.print(duration); Serial.print(',');
     Serial.print(F("\"motor_stop_reason\":"));
     print_motor_stop_reason_to_USB(reason); Serial.print(',');
     Serial.print(F("\"current\":["));
@@ -325,7 +324,7 @@ void loop()
     fetch_new_command();
     if (is_user_command_new) state_machine();
 
-    if (millis() - time_of_last_heart_beat > 1000 * TIMER0_MESS_UP_FACTOR){
+    if (millis() - time_of_last_heart_beat > 1000){
         time_of_last_heart_beat = millis();
         ack('H', true);
     }
