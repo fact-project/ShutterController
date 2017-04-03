@@ -35,18 +35,6 @@ void DualVNH5019MotorShield::init()
 
 }
 
-void DualVNH5019MotorShield::setM1Speed(int speed)
-{
-  setSpeed_any(_INA1, _INB1, _PWM1, speed);
-  current_speed[0] = speed;
-}
-
-void DualVNH5019MotorShield::setM2Speed(int speed)
-{
-  setSpeed_any(_INA2, _INB2, _PWM2, speed);
-  current_speed[1] = speed;
-}
-
 // Set speed for motor, speed is a number betwenn -255 and 255
 void
 DualVNH5019MotorShield::setSpeed_any (int ina, int inb, int pwm, int speed)
@@ -77,53 +65,18 @@ DualVNH5019MotorShield::setSpeed_any (int ina, int inb, int pwm, int speed)
   }
 }
 
-void DualVNH5019MotorShield::setMotorSpeed(int motor, int speed){ // choose motor as int: 0 -> M1 and 1 -> M2
-  if(motor == 0){
-    setM1Speed(speed);
-  } else {
-    setM2Speed(speed);
-  }
+void DualVNH5019MotorShield::setMotorSpeed(int motor, int speed){
+    if(motor == 0){
+        setSpeed_any(_INA1, _INB1, _PWM1, speed);
+        current_speed[0] = speed;
+    } else {
+        setSpeed_any(_INA2, _INB2, _PWM2, speed);
+        current_speed[1] = speed;
+    }
 }
 
 int DualVNH5019MotorShield::getMotorSpeed(int motor){
   return current_speed[motor];
-}
-
-// Brake motor 1, brake is a number between 0 and 255
-void DualVNH5019MotorShield::setM1Brake(int brake)
-{
-  // normalize brake
-  if (brake < 0)
-  {
-    brake = -brake;
-  }
-  if (brake > 255)  // Max brake
-    brake = 255;
-  digitalWrite(_INA1, LOW);
-  digitalWrite(_INB1, LOW);
-  analogWrite(_PWM1, brake);
-}
-
-// Brake motor 2, brake is a number between 0 and 255
-void DualVNH5019MotorShield::setM2Brake(int brake)
-{
-  // normalize brake
-  if (brake < 0)
-  {
-    brake = -brake;
-  }
-  if (brake > 255)  // Max brake
-    brake = 255;
-  digitalWrite(_INA2, LOW);
-  digitalWrite(_INB2, LOW);
-  analogWrite(_PWM2, brake);
-}
-
-// Brake motor 1 and 2, brake is a number between 0 and 255
-void DualVNH5019MotorShield::setBrakes(int m1Brake, int m2Brake)
-{
-  setM1Brake(m1Brake);
-  setM2Brake(m2Brake);
 }
 
 // a factor 10 preamp has been placed, so this:

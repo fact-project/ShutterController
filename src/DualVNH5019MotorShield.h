@@ -7,18 +7,12 @@
 class DualVNH5019MotorShield
 {
   public:
-    // CONSTRUCTORS
-    DualVNH5019MotorShield(); // Default pin selection.
 
-    // PUBLIC METHODS
-    void init(); // Initialize TIMER 1, set the PWM to 20kHZ.
-    void setM1Speed(int speed); // Set speed for M1.
-    void setM2Speed(int speed); // Set speed for M2.
+    DualVNH5019MotorShield();
+
+    void init();
     void setMotorSpeed(int motor, int speed); // choose motor as int: 0 -> M1 and 1 -> M2
     int getMotorSpeed(int motor);
-    void setM1Brake(int brake); // Brake M1.
-    void setM2Brake(int brake); // Brake M2.
-    void setBrakes(int m1Brake, int m2Brake); // Brake both M1 and M2.
     uint32_t get_mean(int motor, int samples);
     tools::mean_std_t get_mean_std(int motor, uint16_t samples);
     void ramp_to_speed_blocking(int motor, int speed);
@@ -29,12 +23,12 @@ class DualVNH5019MotorShield
     // Define Current Limits in [A] - Offset is 500mA for no load on the motors
     // pushing coefficient ~100 g/mA
     // currents are measured in counts, 1 count corresponds to 3.4 mA
-    const unsigned int _OverCurrent = 441 ; // i.e. ~1500mA .. ~100kg load.
-    const unsigned int _ZeroCurrent = 100; // i.e. ~250mA
+    const unsigned int _OverCurrent = 441 ;
+    const unsigned int _ZeroCurrent = 100;
 
 
   private:
-    void setSpeed_any (volatile uint8_t *ocr_reg, int ina, int inb, int pwm, int speed);
+    void setSpeed_any (int ina, int inb, int pwm, int speed);
 
     unsigned char _INA1;
     unsigned char _INB1;
