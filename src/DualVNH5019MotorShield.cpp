@@ -89,13 +89,6 @@ int DualVNH5019MotorShield::getMotorSpeed(int motor){
   return current_speed[motor];
 }
 
-// Set speed for motor 1 and 2
-void DualVNH5019MotorShield::setSpeeds(int m1Speed, int m2Speed)
-{
-  setM1Speed(m1Speed);
-  setM2Speed(m2Speed);
-}
-
 // Brake motor 1, brake is a number between 0 and 255
 void DualVNH5019MotorShield::setM1Brake(int brake)
 {
