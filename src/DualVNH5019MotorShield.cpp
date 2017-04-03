@@ -26,32 +26,7 @@ void DualVNH5019MotorShield::init()
   pinMode(_INB2,OUTPUT);
   pinMode(_PWM2,OUTPUT);
   pinMode(_CS2,INPUT);
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  /*
-  // Timer 1 configuration
-  // prescaler: clockI/O / 1
-  // outputs enabled
-  // phase-correct PWM
-  // top of 255
-  //
-  // PWM frequency calculation
-  // 16MHz / 1 (prescaler) / 2 (phase-correct) / 400 (top) = 20kHz
-  TCCR1A = 0b10100000;
-  TCCR1B = 0b00010001;
-  ICR1 = 255;
-  */
-  // Timer 0 configuration
-  // prescaler: clockI/O / 1
-  // outputs enabled
-  // phase-correct PWM
-  //
-  // PWM frequency calculation
-  // 16MHz / 1 (prescaler) / 2 (phase-correct) / 255 = 31kHz
-  TCCR0A = 0b10100001;
-  TCCR0B = 0b00000001;
 
-
-  #endif
 }
 
 void DualVNH5019MotorShield::setM1Speed(int speed)
@@ -78,11 +53,7 @@ DualVNH5019MotorShield::setSpeed_any (volatile uint8_t *ocr_reg, int ina, int in
   }
   if (speed > 255)  // Max
     speed = 255;
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  *ocr_reg = speed;
-  #else
   analogWrite(pwm, speed);
-  #endif
   if (speed == 0)
   {
     digitalWrite(ina,LOW);   // Make the motor coast no
@@ -135,11 +106,7 @@ void DualVNH5019MotorShield::setM1Brake(int brake)
     brake = 255;
   digitalWrite(_INA1, LOW);
   digitalWrite(_INB1, LOW);
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0B = brake;
-  #else
   analogWrite(_PWM1, brake);
-  #endif
 }
 
 // Brake motor 2, brake is a number between 0 and 255
@@ -154,11 +121,7 @@ void DualVNH5019MotorShield::setM2Brake(int brake)
     brake = 255;
   digitalWrite(_INA2, LOW);
   digitalWrite(_INB2, LOW);
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-  OCR0A = brake;
-  #else
   analogWrite(_PWM2, brake);
-  #endif
 }
 
 // Brake motor 1 and 2, brake is a number between 0 and 255
