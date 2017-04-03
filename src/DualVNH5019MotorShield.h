@@ -46,8 +46,7 @@ class DualVNH5019MotorShield
     unsigned char _PWM2;
     unsigned char _CS2;
 
-    int current_speed_M1 = 0;
-    int current_speed_M2 = 0;
+    int current_speed[2];
 };
 
 #endif

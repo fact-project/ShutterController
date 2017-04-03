@@ -13,6 +13,10 @@ DualVNH5019MotorShield::DualVNH5019MotorShield()
   _INB2 = 8;
   _CS2 = A5;
   _PWM2 = 6;
+
+  current_speed[0] = 0;
+  current_speed[1] = 0;
+
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
@@ -34,13 +38,13 @@ void DualVNH5019MotorShield::init()
 void DualVNH5019MotorShield::setM1Speed(int speed)
 {
   setSpeed_any(_INA1, _INB1, _PWM1, speed);
-  current_speed_M1 = speed;
+  current_speed[0] = speed;
 }
 
 void DualVNH5019MotorShield::setM2Speed(int speed)
 {
   setSpeed_any(_INA2, _INB2, _PWM2, speed);
-  current_speed_M2 = speed;
+  current_speed[1] = speed;
 }
 
 // Set speed for motor, speed is a number betwenn -255 and 255
@@ -82,11 +86,7 @@ void DualVNH5019MotorShield::setMotorSpeed(int motor, int speed){ // choose moto
 }
 
 int DualVNH5019MotorShield::getMotorSpeed(int motor){
-  if(motor == 0){
-    return current_speed_M1;
-  } else {
-    return current_speed_M2;
-  }
+  return current_speed[motor];
 }
 
 // Set speed for motor 1 and 2
