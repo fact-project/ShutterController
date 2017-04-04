@@ -88,11 +88,6 @@ void print_system_state_to_USB(){
     Serial.print('}');
 }
 
-void print_system_state(){
-    print_system_state_to_ethernet();
-    print_system_state_to_USB();
-}
-
 void print_motor_stop_reason_to_ethernet(motor_stop_reason_t r){
     server.print(F("{\"motor_stop_name\":"));
     switch (r){
@@ -249,16 +244,34 @@ void close_upper() { move_fully_supervised(1, false); }
 void open_lower() { move_fully_supervised(0, true); }
 void open_upper() { move_fully_supervised(1, true); }
 
-void ack(char cmd, bool ok)
+void ack_to_ethernet(char cmd, bool ok)
+{
+    Serial.print(F("{\"ok\":"));
+    Serial.print(ok); Serial.print(',');
+    Serial.print(F("{\"cmd[int]\":"));
+    Serial.print(int(cmd)); Serial.print(',');
+    Serial.print(F("\"state\":"));
+    print_system_state_to_USB();
+    Serial.println('}');
+}
+
+void ack_to_ethernet(char cmd, bool ok)
 {
     server.print(F("{\"ok\":"));
     server.print(ok); server.print(',');
     server.print(F("{\"cmd[int]\":"));
     server.print(int(cmd)); server.print(',');
     server.print(F("\"state\":"));
-    print_system_state();
+    print_system_state_to_ethernet();
     server.println('}');
 }
+
+void ack(char cmd, bool ok)
+{
+    ack_to_USB(cmd, ok);
+    ack_to_ethernet(cmd, ok);
+}
+
 
 void init_drive_close(char cmd)
 {
