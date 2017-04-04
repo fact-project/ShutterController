@@ -267,6 +267,7 @@ void init_drive_close(char cmd)
     close_lower();
     if (system_state != S_DRIVE_CLOSING) return;
     close_upper();
+    if (system_state == S_DRIVE_CLOSING) system_state = S_CLOSED;
     ack(cmd, true);
 }
 
@@ -277,6 +278,7 @@ void init_drive_open(char cmd)
     open_upper();
     if (system_state != S_DRIVE_OPENING) return;
     open_lower();
+    if (system_state == S_DRIVE_OPENING) system_state = S_OPEN;
     ack(cmd, true);
 }
 
