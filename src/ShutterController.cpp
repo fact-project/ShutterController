@@ -248,8 +248,10 @@ void ack_to_USB(char cmd, bool ok)
 {
     Serial.print(F("{\"ok\":"));
     Serial.print(ok); Serial.print(',');
-    Serial.print(F("{\"cmd[int]\":"));
+    Serial.print(F("\"cmd[int]\":"));
     Serial.print(int(cmd)); Serial.print(',');
+    Serial.print(F("\"cmd[char]\":\""));
+    Serial.print(cmd); Serial.print("\",");
     Serial.print(F("\"state\":"));
     print_system_state_to_USB();
     Serial.println('}');
@@ -259,8 +261,10 @@ void ack_to_ethernet(char cmd, bool ok)
 {
     server.print(F("{\"ok\":"));
     server.print(ok); server.print(',');
-    server.print(F("{\"cmd[int]\":"));
+    server.print(F("\"cmd[int]\":"));
     server.print(int(cmd)); server.print(',');
+    server.print(F("\"cmd[char]\":\""));
+    server.print(cmd); server.print("\",");
     server.print(F("\"state\":"));
     print_system_state_to_ethernet();
     server.println('}');
@@ -341,7 +345,7 @@ void loop()
 
     if (millis() - time_of_last_heart_beat > 1000){
         time_of_last_heart_beat = millis();
-        ack('H', true);
+        ack(user_command, true);
     }
 }
 
