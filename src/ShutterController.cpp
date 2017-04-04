@@ -244,7 +244,7 @@ void close_upper() { move_fully_supervised(1, false); }
 void open_lower() { move_fully_supervised(0, true); }
 void open_upper() { move_fully_supervised(1, true); }
 
-void ack_to_ethernet(char cmd, bool ok)
+void ack_to_USB(char cmd, bool ok)
 {
     Serial.print(F("{\"ok\":"));
     Serial.print(ok); Serial.print(',');
