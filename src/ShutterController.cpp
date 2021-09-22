@@ -93,23 +93,39 @@ void check_motor_current(){
       // nothing is moving, so we don't care
       break;
     case S_UPPER_CLOSING:
-      if (md.is_overcurrent(1) || md.is_zerocurrent(1)){
+      if (md.is_overcurrent(1)){
         system_state = S_BOTH_CLOSED;
+        Serial.println("M1 OVERCURRENT -> BOTH CLOSED");
+      } else if (md.is_zerocurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M1 0-zero-current -> BOTH CLOSED");
       }
       break;
     case S_UPPER_OPENING:
-      if (md.is_overcurrent(1) || md.is_zerocurrent(1)){
-        system_state = S_HALF_OPEN;
+      if (md.is_overcurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M1 OVERCURRENT -> HALF OPEN");
+      } else if (md.is_zerocurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M1 0-zero-current -> HALF OPEN");
       }
       break;
     case S_LOWER_OPENING:
-      if (md.is_overcurrent(0) || md.is_zerocurrent(0)){
-        system_state = S_BOTH_OPEN;
+      if (md.is_overcurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M0 OVERCURRENT -> BOTH OPEN");
+      } else if (md.is_zerocurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M0 0-zero-current -> BOTH OPEN");
       }
       break;
     case S_LOWER_CLOSING:
-      if (md.is_overcurrent(0) || md.is_zerocurrent(0)){
-        system_state = S_HALF_OPEN;
+      if (md.is_overcurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M0 OVERCURRENT -> HALF_OPEN");
+      } else if (md.is_zerocurrent(1)){
+        system_state = S_BOTH_CLOSED;
+        Serial.println("M0 0-zero-current -> HALF_OPEN");
       }
       break;
   }
