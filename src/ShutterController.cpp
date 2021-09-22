@@ -95,37 +95,37 @@ void check_motor_current(){
     case S_UPPER_CLOSING:
       if (md.is_overcurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M1 OVERCURRENT -> BOTH CLOSED");
+        Serial.println("M1 OVERCURRENT: UPPER_CLOSING -> BOTH CLOSED");
       } else if (md.is_zerocurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M1 0-zero-current -> BOTH CLOSED");
+        Serial.println("M1 0-zero-current: UPPER_CLOSING -> BOTH CLOSED");
       }
       break;
     case S_UPPER_OPENING:
       if (md.is_overcurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M1 OVERCURRENT -> HALF OPEN");
+        Serial.println("M1 OVERCURRENT: UPPER_OPENING -> HALF OPEN");
       } else if (md.is_zerocurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M1 0-zero-current -> HALF OPEN");
+        Serial.println("M1 0-zero-current: UPPER_OPENING -> HALF OPEN");
       }
       break;
     case S_LOWER_OPENING:
       if (md.is_overcurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M0 OVERCURRENT -> BOTH OPEN");
+        Serial.println("M0 OVERCURRENT: LOWER_OPENING -> BOTH OPEN");
       } else if (md.is_zerocurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M0 0-zero-current -> BOTH OPEN");
+        Serial.println("M0 0-zero-current: LOWER_OPENING -> BOTH OPEN");
       }
       break;
     case S_LOWER_CLOSING:
       if (md.is_overcurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M0 OVERCURRENT -> HALF_OPEN");
+        Serial.println("M0 OVERCURRENT: LOWER_CLOSING -> HALF_OPEN");
       } else if (md.is_zerocurrent(1)){
         system_state = S_BOTH_CLOSED;
-        Serial.println("M0 0-zero-current -> HALF_OPEN");
+        Serial.println("M0 0-zero-current: LOWER_CLOSING -> HALF_OPEN");
       }
       break;
   }
