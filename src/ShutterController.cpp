@@ -48,12 +48,16 @@ void open_both_sides(){
       md.adjust_to_speed(1, 255);
       system_state = S_UPPER_OPENING;
       break;
-    case S_UPPER_OPENING: break;
+    case S_UPPER_OPENING:
+      md.adjust_to_speed(1, 255);
+      break;
     case S_HALF_OPEN:
       md.adjust_to_speed(0, 255);
       system_state = S_LOWER_OPENING;
       break;
-    case S_LOWER_OPENING: break;
+    case S_LOWER_OPENING:
+      md.adjust_to_speed(0, 255);
+      break;
     case S_BOTH_OPEN: break;
     case S_LOWER_CLOSING:
       md.adjust_to_speed(0, 255);
@@ -85,8 +89,12 @@ void close_both_sides(){
       system_state = S_LOWER_CLOSING;
       md.adjust_to_speed(0, -255);
       break;
-    case S_LOWER_CLOSING: break;
-    case S_UPPER_CLOSING: break;
+    case S_LOWER_CLOSING:
+      md.adjust_to_speed(0, -255);
+      break;
+    case S_UPPER_CLOSING:
+      md.adjust_to_speed(1, -255);
+      break;
   }
 }
 
