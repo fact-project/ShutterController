@@ -4,13 +4,13 @@
 #include <stdio.h> // for function sprintf
 
 typedef enum {
-  S_BOTH_CLOSED,
-  S_UPPER_OPENING,
-  S_HALF_OPEN,
-  S_LOWER_OPENING,
-  S_BOTH_OPEN,
-  S_LOWER_CLOSING,
-  S_UPPER_CLOSING,
+  S_BOTH_CLOSED,     // 0
+  S_UPPER_OPENING,   // 1
+  S_HALF_OPEN,       // 2
+  S_LOWER_OPENING,   // 3
+  S_BOTH_OPEN,       // 4
+  S_LOWER_CLOSING,   // 5
+  S_UPPER_CLOSING,   // 6
 } system_state_t;
 
 system_state_t system_state = S_BOTH_OPEN;
@@ -35,22 +35,22 @@ LinakHallSensor lh(A2, A3);
 void open_both_sides(){
   switch (system_state){
     case S_BOTH_CLOSED:
-      md.ramp_to_speed_blocking(1, 255);
+      md.adjust_to_speed(1, 255);
       system_state = S_UPPER_OPENING;
       break;
     case S_UPPER_OPENING: break;
     case S_HALF_OPEN:
-      md.ramp_to_speed_blocking(0, 255);
+      md.adjust_to_speed(0, 255);
       system_state = S_LOWER_OPENING;
       break;
     case S_LOWER_OPENING: break;
     case S_BOTH_OPEN: break;
     case S_LOWER_CLOSING:
-      md.ramp_to_speed_blocking(0, 255);
+      md.adjust_to_speed(0, 255);
       system_state = S_LOWER_OPENING;
       break;
     case S_UPPER_CLOSING:
-      md.ramp_to_speed_blocking(1, 255);
+      md.adjust_to_speed(1, 255);
       system_state = S_UPPER_OPENING;
       break;
   }
@@ -60,24 +60,29 @@ void close_both_sides(){
   switch (system_state){
     case S_BOTH_CLOSED: break;
     case S_UPPER_OPENING:
-      md.ramp_to_speed_blocking(1, -255);
+      md.adjust_to_speed(1, -255);
       system_state = S_UPPER_CLOSING;
       break;
     case S_HALF_OPEN:
       system_state = S_UPPER_CLOSING;
-      md.ramp_to_speed_blocking(1, -255);
+      md.adjust_to_speed(1, -255);
       break;
     case S_LOWER_OPENING:
       system_state = S_LOWER_CLOSING;
-      md.ramp_to_speed_blocking(0, -255);
+      md.adjust_to_speed(0, -255);
       break;
     case S_BOTH_OPEN:
       system_state = S_LOWER_CLOSING;
-      md.ramp_to_speed_blocking(0, -255);
+      md.adjust_to_speed(0, -255);
       break;
     case S_LOWER_CLOSING: break;
     case S_UPPER_CLOSING: break;
   }
+}
+
+void stop_all(){
+  md.ramp_to_speed_blocking(0, 0);
+  md.ramp_to_speed_blocking(1, 0);
 }
 
 void check_motor_current(){
@@ -152,6 +157,8 @@ void loop()
     open_both_sides();
   } else if (current_cmd == 'c'){
     close_both_sides();
+  } else if (current_cmd == 'x'){
+    stop_all();
   }
   send_status_human_readable('-');
   check_motor_current();

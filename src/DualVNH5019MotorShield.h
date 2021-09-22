@@ -28,6 +28,7 @@ class DualVNH5019MotorShield
     unsigned int get_mean(int motor, int samples);
     tools::mean_std_t get_mean_std(int motor, int samples);
     void ramp_to_speed_blocking(int motor, int speed);
+    void adjust_to_speed(int motor, int speed);
     bool is_overcurrent(int motor);
     bool is_zerocurrent(int motor);
 

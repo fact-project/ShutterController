@@ -266,6 +266,22 @@ tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, int samples){
   return tmp;
 }
 
+void DualVNH5019MotorShield::adjust_to_speed(int motor, int speed)
+{
+  for (int step=0; step<20; step++){
+    if (getMotorSpeed(motor) == speed){
+      break;
+    }
+    if (getMotorSpeed(motor) < speed){
+      setMotorSpeed(motor, getMotorSpeed(motor) + 1);
+    } else {
+      setMotorSpeed(motor, getMotorSpeed(motor) - 1);
+    }
+    delay(1);
+  }
+}
+
+
 void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)
 {
   while (getMotorSpeed(motor) != speed){
