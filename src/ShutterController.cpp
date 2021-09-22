@@ -122,19 +122,19 @@ void check_motor_current(){
       }
       break;
     case S_LOWER_OPENING:
-      if (md.is_overcurrent(1)){
+      if (md.is_overcurrent(0)){
         system_state = S_BOTH_OPEN;
         Serial.println("M0 OVERCURRENT: LOWER_OPENING -> BOTH OPEN");
-      } else if (md.is_zerocurrent(1)){
+      } else if (md.is_zerocurrent(0)){
         system_state = S_BOTH_OPEN;
         Serial.println("M0 0-zero-current: LOWER_OPENING -> BOTH OPEN");
       }
       break;
     case S_LOWER_CLOSING:
-      if (md.is_overcurrent(1)){
+      if (md.is_overcurrent(0)){
         system_state = S_HALF_OPEN;
         Serial.println("M0 OVERCURRENT: LOWER_CLOSING -> HALF_OPEN");
-      } else if (md.is_zerocurrent(1)){
+      } else if (md.is_zerocurrent(0)){
         system_state = S_HALF_OPEN;
         Serial.println("M0 0-zero-current: LOWER_CLOSING -> HALF_OPEN");
       }
