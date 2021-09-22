@@ -16,6 +16,16 @@ typedef enum {
 system_state_t system_state = S_BOTH_OPEN;
 char current_cmd = 'x';
 
+const char* state_names[] = {
+  "BOTH_CLOSED",
+  "UPPER_OPENING",
+  "HALF_OPEN",
+  "LOWER_OPENING",
+  "BOTH_OPEN",
+  "LOWER_CLOSING",
+  "UPPER_CLOSING",
+};
+
 const int M1INA = 2;
 const int M1INB = 3;
 const int M2INA = 7;
@@ -147,9 +157,9 @@ void send_status_human_readable(char foo)
       md.getMotorSpeed(i)
     );
   }
-  sprintf(formatted_string+90, "cmd=%c system_state=%d  %c",
+  sprintf(formatted_string+90, "cmd=%c system_state=%s  %c",
     current_cmd,
-    system_state,
+    state_names[system_state],
     foo
   );
   formatted_string[149] = 0;
