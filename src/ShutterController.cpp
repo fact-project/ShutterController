@@ -144,11 +144,8 @@ void send_status_human_readable(char foo)
       i, // motor id
       (long)current.mean, (long)current.std,
       (long)position.mean, (long)position.std,
-      md.getMotorSpeed(i),
-      current_cmd,
-      system_state,
-      foo
-      );
+      md.getMotorSpeed(i)
+    );
   }
   sprintf(formatted_string+90, "cmd=%c system_state=%d  %c",
     current_cmd,
