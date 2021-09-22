@@ -277,7 +277,7 @@ void DualVNH5019MotorShield::adjust_to_speed(int motor, int speed)
     } else {
       setMotorSpeed(motor, getMotorSpeed(motor) - 1);
     }
-    delay(1);
+    delay(10);
   }
 }
 
@@ -290,7 +290,7 @@ void DualVNH5019MotorShield::ramp_to_speed_blocking(int motor, int speed)
     } else {
       setMotorSpeed(motor, getMotorSpeed(motor) - 1);
     }
-    delay(1);
+    delay(10);
   }
 }
 
