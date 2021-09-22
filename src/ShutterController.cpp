@@ -198,7 +198,17 @@ void loop()
     close_both_sides();
   } else if (current_cmd == 'x'){
     stop_all();
+  } else if (current_cmd == 'C'){
+    system_state = S_BOTH_CLOSED;
+    current_cmd == 'x'
+  } else if (current_cmd == 'O'){
+    system_state = S_BOTH_OPEN;
+    current_cmd == 'x'
+  } else if (current_cmd == 'H'){
+    system_state = S_HALF_OPEN;
+    current_cmd == 'x'
   }
+
   send_status_human_readable('-');
   check_motor_current();
   send_status_human_readable('|');
