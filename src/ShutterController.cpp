@@ -140,7 +140,7 @@ void send_status_human_readable(char foo)
     tools::mean_std_t position = lh.get_mean_std(i, 300);
     //M0: I=   0+-   0 pos= 751+--2147483648 S=  0 cmd=x system_state=4  |  M1: I=   0+-   0 pos=  15+-   1 S=  0 cmd=x system_state=4  |
     //M0: I=   0+-   0 pos= 751+-   1 S=  0 cmd=x system_state=4  |
-    sprintf(formatted_string+i*70, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d  %c               ",
+    sprintf(formatted_string+i*45, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d               ",
       i, // motor id
       (long)current.mean, (long)current.std,
       (long)position.mean, (long)position.std,
@@ -150,6 +150,11 @@ void send_status_human_readable(char foo)
       foo
       );
   }
+  sprintf(formatted_string+90, "cmd=%c system_state=%d  %c",
+    current_cmd,
+    system_state,
+    foo
+  );
   formatted_string[149] = 0;
   Serial.println(formatted_string);
 }
