@@ -134,11 +134,11 @@ void check_motor_current(){
 
 void send_status_human_readable(char foo)
 {
-  char formatted_string[128];
+  char formatted_string[150];
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
     tools::mean_std_t position = lh.get_mean_std(i, 300);
-    sprintf(formatted_string, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d  %c",
+    sprintf(formatted_string+i*70, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d cmd=%c system_state=%d  %c",
       i, // motor id
       (long)current.mean, (long)current.std,
       (long)position.mean, (long)position.std,
@@ -147,9 +147,9 @@ void send_status_human_readable(char foo)
       system_state,
       foo
       );
-    formatted_string[127] = 0;
-    Serial.println(formatted_string);
   }
+  formatted_string[149] = 0;
+  Serial.println(formatted_string);
 }
 
 void fetch_new_command()
