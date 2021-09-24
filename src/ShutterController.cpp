@@ -154,15 +154,16 @@ void check_motor_current(){
 void send_status_human_readable(char foo)
 {
   char formatted_string[200];
+  sprintf(formatted_string, "T: %d:               ", millis());
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
-    sprintf(formatted_string+i*25, "M%1d: I=%4ld+-%4ld S=%3d       ",
+    sprintf(formatted_string+15+i*25, "M%1d: I=%4ld+-%4ld S=%3d       ",
       i, // motor id
       (long)current.mean, (long)current.std,
       md.getMotorSpeed(i)
     );
   }
-  sprintf(formatted_string+50, "cmd=%c system_state=%s  %c",
+  sprintf(formatted_string+15+50, "cmd=%c system_state=%s  %c",
     current_cmd,
     state_names[system_state],
     foo
