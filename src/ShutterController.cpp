@@ -200,6 +200,13 @@ void loop()
 
   // left = lower = 0
   // right = upper = 1
+  if (md.is_overcurrent(0)){
+    return;
+  }
+  if (md.is_overcurrent(1)){
+    return;
+  }
+
   if (current_cmd == 'x'){
     stop_all();
     md.ramp_to_speed_blocking(0, 0);

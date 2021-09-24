@@ -245,7 +245,7 @@ unsigned int DualVNH5019MotorShield::get_mean(int motor, int samples)
   for (int j=0;j<samples;j++) {
     tmp += getCurrentMilliamps(motor);
   }
-  return (unsigned int)(tmp/samples);
+  return tmp/samples;
 }
 
 tools::mean_std_t DualVNH5019MotorShield::get_mean_std(int motor, int samples){
