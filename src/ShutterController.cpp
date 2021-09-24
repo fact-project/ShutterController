@@ -156,17 +156,13 @@ void send_status_human_readable(char foo)
   char formatted_string[200];
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
-    tools::mean_std_t position = lh.get_mean_std(i, 300);
-    //M0: I=   0+-   0 pos= 751+--2147483648 S=  0 cmd=x system_state=4  |  M1: I=   0+-   0 pos=  15+-   1 S=  0 cmd=x system_state=4  |
-    //M0: I=   0+-   0 pos= 751+-   1 S=  0 cmd=x system_state=4  |
-    sprintf(formatted_string+i*45, "M%1d: I=%4ld+-%4ld pos=%4ld+-%4ld S=%3d               ",
+    sprintf(formatted_string+i*25, "M%1d: I=%4ld+-%4ld S=%3d       ",
       i, // motor id
       (long)current.mean, (long)current.std,
-      (long)position.mean, (long)position.std,
       md.getMotorSpeed(i)
     );
   }
-  sprintf(formatted_string+90, "cmd=%c system_state=%s  %c",
+  sprintf(formatted_string+50, "cmd=%c system_state=%s  %c",
     current_cmd,
     state_names[system_state],
     foo
@@ -192,25 +188,43 @@ void setup()
 
 void loop()
 {
-  if (current_cmd == 'o'){
-    open_both_sides();
-  } else if (current_cmd == 'c'){
-    close_both_sides();
-  } else if (current_cmd == 'x'){
+  // left = lower = 0
+  // right = upper = 1
+  if (current_cmd == 'x'){
     stop_all();
-  } else if (current_cmd == 'C'){
-    system_state = S_BOTH_CLOSED;
-    current_cmd = 'x';
-  } else if (current_cmd == 'O'){
-    system_state = S_BOTH_OPEN;
-    current_cmd = 'x';
-  } else if (current_cmd == 'H'){
-    system_state = S_HALF_OPEN;
-    current_cmd = 'x';
+    md.ramp_to_speed_blocking(0, 0);
+    md.ramp_to_speed_blocking(1, 0);
+  } else if (current_cmd == 'a'){
+    // left motor increase speed +1
+    md.alter_speed(0, 1);
+  } else if (current_cmd == 'A'){
+    // left motor increase speed +10
+    md.alter_speed(0, 10);
+  } else if (current_cmd == 'd'){
+    // left motor decrease speed -1
+    md.alter_speed(0, -1);
+  } else if (current_cmd == 'D'){
+    // left motor decrease speed -10
+    md.alter_speed(0, -10);
+  } else if (current_cmd == 's'){
+    // left motor stop
+    md.ramp_to_speed_blocking(0, 0);
+  } else if (current_cmd == 'g'){
+    // right motor increase speed +1
+    md.alter_speed(1, 1);
+  } else if (current_cmd == 'G'){
+    // right motor increase speed +10
+    md.alter_speed(1, 10);
+  } else if (current_cmd == 'h'){
+    // right motor decrease speed -1
+    md.alter_speed(1, -1);
+  } else if (current_cmd == 'j'){
+    // right motor decrease speed -10
+    md.alter_speed(1, -10);
+  } else if (current_cmd == 'J'){
+    // right motor stop
+    md.ramp_to_speed_blocking(1, 0);
   }
-
-  send_status_human_readable('-');
-  check_motor_current();
-  send_status_human_readable('|');
+  send_status_human_readable(' ');
   fetch_new_command();
 }
