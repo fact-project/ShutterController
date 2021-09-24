@@ -197,30 +197,38 @@ void loop()
   } else if (current_cmd == 'a'){
     // left motor increase speed +1
     md.alter_speed(0, 1);
+    current_cmd = ' ';
   } else if (current_cmd == 'A'){
     // left motor increase speed +10
     md.alter_speed(0, 10);
+    current_cmd = ' ';
   } else if (current_cmd == 'd'){
     // left motor decrease speed -1
     md.alter_speed(0, -1);
+    current_cmd = ' ';
   } else if (current_cmd == 'D'){
     // left motor decrease speed -10
     md.alter_speed(0, -10);
+    current_cmd = ' ';
   } else if (current_cmd == 's'){
     // left motor stop
     md.ramp_to_speed_blocking(0, 0);
   } else if (current_cmd == 'g'){
     // right motor increase speed +1
     md.alter_speed(1, 1);
+    current_cmd = ' ';
   } else if (current_cmd == 'G'){
     // right motor increase speed +10
     md.alter_speed(1, 10);
+    current_cmd = ' ';
   } else if (current_cmd == 'h'){
     // right motor decrease speed -1
     md.alter_speed(1, -1);
+    current_cmd = ' ';
   } else if (current_cmd == 'j'){
     // right motor decrease speed -10
     md.alter_speed(1, -10);
+    current_cmd = ' ';
   } else if (current_cmd == 'J'){
     // right motor stop
     md.ramp_to_speed_blocking(1, 0);
