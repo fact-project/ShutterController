@@ -192,10 +192,6 @@ void setup()
 
 void loop()
 {
-
-  Serial.println(millis()/1000);
-  delay(1000);
-  return;
   cur_time = millis();
 
   if (cur_time - last_time > 500){
