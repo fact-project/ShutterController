@@ -186,8 +186,6 @@ void setup()
   Serial.begin(115200);
   md.init();
   lh.init();
-  last_time = millis();
-  cur_time = millis();
 }
 
 
@@ -247,7 +245,5 @@ void loop()
   }
 
   fetch_new_command();
-
-
 
 }
