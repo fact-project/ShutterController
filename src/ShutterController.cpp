@@ -154,7 +154,7 @@ void check_motor_current(){
 void send_status_human_readable(char foo)
 {
   char formatted_string[200];
-  sprintf(formatted_string, "T: %d:               ", millis());
+  sprintf(formatted_string, "T: %ld:               ", millis());
   for (int i=0; i<2; i++){
     tools::mean_std_t current = md.get_mean_std(i, 300);
     sprintf(formatted_string+15+i*25, "M%1d: I=%4ld+-%4ld S=%3d       ",
