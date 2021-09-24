@@ -178,16 +178,28 @@ void fetch_new_command()
   }
 }
 
+unsigned long last_time = 0;
+unsigned long cur_time = 0;
+
 void setup()
 {
   Serial.begin(115200);
   md.init();
   lh.init();
+  last_time = millis();
+  cur_time = millis();
 }
 
 
 void loop()
 {
+  cur_time = millis();
+
+  if (cur_time - last_time > 500){
+    send_status_human_readable(' ');
+    last_time = cur_time;
+  }
+
   // left = lower = 0
   // right = upper = 1
   if (current_cmd == 'x'){
@@ -222,17 +234,20 @@ void loop()
     md.alter_speed(1, 10);
     current_cmd = ' ';
   } else if (current_cmd == 'h'){
+    // right motor stop
+    md.ramp_to_speed_blocking(1, 0);
+  } else if (current_cmd == 'j'){
     // right motor decrease speed -1
     md.alter_speed(1, -1);
     current_cmd = ' ';
-  } else if (current_cmd == 'j'){
+  } else if (current_cmd == 'J'){
     // right motor decrease speed -10
     md.alter_speed(1, -10);
     current_cmd = ' ';
-  } else if (current_cmd == 'J'){
-    // right motor stop
-    md.ramp_to_speed_blocking(1, 0);
   }
-  send_status_human_readable(' ');
+
   fetch_new_command();
+
+
+
 }
